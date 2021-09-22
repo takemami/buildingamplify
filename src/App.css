@@ -36,3 +36,87 @@
     transform: rotate(360deg);
   }
 }
+
+.Cock-history {
+  padding: 0.5em 1em;
+  margin: 2em 0;
+  font-weight: bold;
+  background: #FFFAFA;
+  border: solid 1px;/*線*/
+  border-radius: 10px;/*角の丸み*/
+}
+
+.Cock-search {
+  padding: 0.5em 1em;
+  margin: 2em 0;
+  font-weight: bold;
+  background: #FFFAFA;
+  border: solid 1px;/*線*/
+  border-radius: 10px;/*角の丸み*/
+  width: 600px;
+  display: inline-block;
+}
+
+.Cocktail-search {
+  padding: 0.5em 1em;
+  margin: 2em 0;
+  font-weight: bold;
+  background: #FFFFE0;
+  border: solid 1px;/*線*/
+  border-radius: 10px;/*角の丸み*/
+  width: 400px;
+  display: inline-block;
+}
+
+.home {
+  color: #FFFAFA;
+  text-decoration: none;
+}
+
+.linkBlack {
+  color: black;
+  text-decoration: none;
+}
+
+.linkBlue {
+  color: royalblue;
+  text-decoration: none;
+}
+
+.liqueur-search {
+  padding: 0.5em 1em;
+  margin: 2em 0;
+  font-weight: bold;
+  background: #FFFFE0;
+  border: solid 1px;/*線*/
+  border-radius: 10px;/*角の丸み*/
+  width: 400px;
+  text-align: center;
+  display: inline-block;
+}
+
+label img {
+  margin: 3px;
+  padding: 8px;
+}
+
+.selection-group input[type="radio"] {
+  display: none;
+}
+
+.selection-group input[type="radio"]:checked + label img {
+  background: blue;
+}
+
+.CalNumber {
+  padding-bottom: '5000px';
+}
+
+ul {
+  padding-bottom: 200px;/*リスト下の余白*/
+  list-style-position: inside;
+}
+li {
+  padding-top: 10px; 
+  padding-bottom: 10px;
+}

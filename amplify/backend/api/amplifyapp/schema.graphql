@@ -2,3 +2,49 @@ type LiqueurData @model @key(fields: ["liqueurname"]){
   liqueurname: String!
   liqueurdegree: Int
 }
+
+type ContainerData @model @key(fields: ["containername"]){
+  containername: String!
+  containercapacity: Int
+  containerpicture: String
+}
+
+type CupData @model @key(fields: ["cupname"]){
+  cupname: String!
+  cupcapacity: Int
+  cuppicture: String
+}
+
+type UserData @model @key(fields: ["username", "order"]) {
+    username: String!
+    order: Int!
+    favorite_cupname: String
+    favorite_cocktail: String
+}
+
+type HistoryData @model 
+  @key(fields: ["username", "cocktailname"]) 
+  @key(name: "HistoryIndex", fields: ["username", "unixtime"], queryField: "HistoryIndexQuery")
+  {
+    username: String!
+    cocktailname: String!
+    cocktaildegree: Int
+    unixtime: Int
+    cupcapacity: Int
+}
+
+type CocktailData @model 
+  @key(fields: ["cocktailname", "cocktailcreator"]) 
+  @key(name: "CocktailtasteIndex", fields: ["cocktailtaste", "cocktailcreator"], queryField: "CocktailtasteIndexQuery")
+  @key(name: "CocktaiLliqandMixIndex", fields: ["liqueur", "mixer"], queryField: "CocktaiLliqandMixIndexQuery")
+  @key(name: "CocktailcreatorIndex", fields: ["cocktailcreator"], queryField: "CocktailcreatorIndexQuery")
+  @key(name: "CocktailmixerIndex", fields: ["mixer", "cocktailcreator"], queryField: "CocktailmixerIndexQuery")
+  {
+    cocktailname: String!
+    cocktailcreator: String!
+    cocktailpicture: String
+    cocktailfeature: String
+    cocktailtaste: String
+    liqueur: String
+    mixer: String
+}
