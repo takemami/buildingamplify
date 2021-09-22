@@ -4,7 +4,6 @@ import './App.css';
 import { Link, useParams } from 'react-router-dom';
 import { BrowserRouter as Router, Route } from 'react-router-dom'
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react';
-import {Auth} from 'aws-amplify';
 import { Grid, Box, ListItem, ListItemText } from '@material-ui/core';
 import { FixedSizeList } from 'react-window';
 import { Autocomplete, ImageList, ImageListItem, ImageListItemBar, ListItemButton, ListSubheader, TextField } from '@mui/material';
@@ -700,9 +699,6 @@ function App() {
     //   alert(cockText);
     //   console.log("oppai");
     // };
-    async function init() {
-      const currentUser = await Auth.currentAuthenticatedUser();
-    }
   
     
   
