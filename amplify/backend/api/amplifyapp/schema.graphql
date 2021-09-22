@@ -1,0 +1,4 @@
+type LiqueurData @model @key(fields: ["liqueurname"]){
+  liqueurname: String!
+  liqueurdegree: Int
+}
