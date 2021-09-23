@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import './App.css';
-//import { API} from 'aws-amplify';
-import { Link, useParams } from 'react-router-dom';
+import { API, graphqlOperation } from 'aws-amplify';
+import { Link, Switch, useHistory, useParams } from 'react-router-dom';
 import { BrowserRouter as Router, Route } from 'react-router-dom'
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react';
 import { Grid, Box, ListItem, ListItemText } from '@material-ui/core';
@@ -31,6 +31,11 @@ import NoSsr from "@material-ui/core/NoSsr";
 import GoogleFontLoader from "react-google-font-loader";
 import { Info, InfoSubtitle, InfoTitle } from "@mui-treasury/components/info";
 import { useBeatsInfoStyles } from "@mui-treasury/styles/info/beats";
+// import { listLiqueurData } from './graphql/queries';
+// import { createCocktailData } from './graphql/mutations';
+import * as gqlQueries from './graphql/queries';
+import * as gqlMutations from './graphql/mutations';
+// import * as gqlSubscriptions from './graphql/subscriptions';
 
 
 
@@ -415,9 +420,18 @@ const BeatsInfoStyle = (props) => {
 
 
 
+
 //画面のレイアウト
 //元々の関数
 function App() {
+  
+
+
+  //データ関係の関数
+  
+
+  
+
   //ユーザ情報確認画面
   function UserInfoApp() {
     return (
@@ -568,8 +582,8 @@ function App() {
   };
 
   //検索結果（カクテル）画面
-  const SearchResultCockApp = () => {
-    const { aboutId } = useParams();
+  function SearchResultCockApp() {
+    const { name } = useParams();
     return (
       <div className="SearchResultCockApp">
       <h1>検索結果</h1>
@@ -580,7 +594,7 @@ function App() {
             <div>
               <p>検索条件</p>
               <div>
-                <p>カクテル名：{aboutId}</p>
+                <p>カクテル名：{name}</p>
               </div>
             </div>
           </Grid>
@@ -689,19 +703,52 @@ function App() {
   };
 
 
-
   //ホーム画面
   function Home(){
     const [cockText, setCockText] = useState('');
-    const onChangeCockText = () => evt => setCockText(evt.target.value);
-    console.log(cockText);
-    // const onClickAdd = () => {
-    //   alert(cockText);
-    //   console.log("oppai");
-    // };
-  
+    const [liqText, setLiqText] = useState('');
+    const onChangeCockText = (e) => {setCockText(() => e.target.value)};
+    const onChangeLiqText = (e) => {setLiqText(() => e.target.value)};
+    const history = useHistory();
+
     
-  
+    // useEffect(() => {
+    //   fetchLiqueurs();
+    // }, []);
+
+    // async function onPost() {
+    //   const res = await API.graphql(graphqlOperation(gqlMutations.createCocktailData, { input: {
+    //     cocktailname: "カシスオレンジ",
+    //     cocktailcreator: "管理者",
+    //     liqueur: "カシスリキュール",
+    //     mixer: "オレンジジュース",
+    //   }})); 
+    //   return res;
+    // }
+    // console.log(onPost());
+
+    // async function fetchLiqueurs() {
+    //   const liqueur = await API.graphql({ query: listLiqueurData });
+    //   setCockText(liqueur.data.listLiqueurData.items);
+    //   return liqueur;
+    // }    
+
+    function handleClick() {
+      
+      console.log({cockText})
+      async function CocktailData() {
+        const cockData = await API.graphql(graphqlOperation(gqlQueries.getCocktailData, {
+          cocktailname: {cockText},
+          cocktailcreator: "管理者",
+        }))
+        cockData = cockData.data.getCocktailData;
+      }; 
+      console.log(CocktailData.cockData);
+      // console.log({cock});
+      history.push(`/SearchResultCock/${cockText}`)
+      return cockText;
+    }
+
     return (
       <div>
       <Box sx={{ flexGrow: 1 }}>
@@ -731,12 +778,16 @@ function App() {
                   <div className="form-group">
                     <label for="cocktail-name"></label>
                     <div>
-                    <FullWidthTextField type="text" value={cockText} onChange={onChangeCockText()}>カクテル名</FullWidthTextField>
+                    <p>text : {cockText}</p>
+                    <TextField fullwidth label="カクテル名" value={cockText} onChange={onChangeCockText}/>
                     </div>
                     <div>
-                    <IconLabelButtons onClick={()=>setCockText(cockText)}>
-                      <Link to={`/SearchResultCock/${cockText}`} className="linkBlue">検索する</Link>
-                    </IconLabelButtons>
+                    <br></br>
+                    {/* <Button onClick={() => history.push(`/SearchResultCock/${cockText}`)} startIcon={<FreeBreakfastIcon/>} variant="outlined"> */}
+                    <Button onClick={() => {handleClick()}} startIcon={<FreeBreakfastIcon/>} variant="outlined">
+                      <Link to='/SearchResultCock/:name' className="linkBlue">検索する</Link>
+                    </Button>
+                    <br></br><br></br>
                     </div>
                   </div>
                 </div>
@@ -755,7 +806,7 @@ function App() {
                   <div class="form-group">
                     <label for="liqueur-name"></label>
                     <div>
-                      <FullWidthTextField>リキュール名</FullWidthTextField>
+                    <TextField fullwidth label="リキュール名" value={liqText} onChange={onChangeLiqText}/>
                     </div>
                     <IconLabelButtons>
                       <Link to="/SearchResultLiq" className="linkBlue">検索する</Link>
@@ -777,21 +828,22 @@ function App() {
         </div>
     );
   }
-
   //遷移
   return (
     <div className="App">
       <Router>
         <MenuAppBar />
+        <Switch>
         <Route exact path="/UserInfo/UserInfoEdit" component={UserInfoEditApp}/>
         <Route exact path="/UserInfo" component={UserInfoApp}/>
         <Route exact path="/SearchResultLiq" component={SearchResultLiqApp}/>
         <Route exact path="/SearchResultTaste" component={SearchResultTasteApp}/>
-        <Route path="/SearchResultCock/:aboutId" component={SearchResultCockApp}/>
         <Route exact path="/CreateLiquor/CalResult" component={CalResultApp}/>
         <Route exact path="/CreateLiquor/CalResultFiltered" component={CalResultFilteredApp}/>
         <Route exact path="/CreateLiquor" component={CreateLiquor2}/>
         <Route exact path="/" component={Home}/>
+        <Route exact path="/SearchResultCock/:name" component={SearchResultCockApp}/>
+        </Switch>
       </Router>
     </div>
     
