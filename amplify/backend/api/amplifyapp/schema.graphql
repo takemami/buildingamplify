@@ -39,6 +39,7 @@ type CocktailData @model
   @key(name: "CocktaiLliqandMixIndex", fields: ["liqueur", "mixer"], queryField: "CocktaiLliqandMixIndexQuery")
   @key(name: "CocktailcreatorIndex", fields: ["cocktailcreator"], queryField: "CocktailcreatorIndexQuery")
   @key(name: "CocktailmixerIndex", fields: ["mixer", "cocktailcreator"], queryField: "CocktailmixerIndexQuery")
+  @key(name: "CocktailliqueurIndex", fields: ["liqueur", "cocktailcreator"], queryField: "CocktailliqueurIndexQuery")
   {
     cocktailname: String!
     cocktailcreator: String!

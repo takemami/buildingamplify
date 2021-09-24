@@ -400,3 +400,35 @@ export const cocktailmixerIndexQuery = /* GraphQL */ `
     }
   }
 `;
+export const cocktailliqueurIndexQuery = /* GraphQL */ `
+  query CocktailliqueurIndexQuery(
+    $liqueur: String
+    $cocktailcreator: ModelStringKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelCocktailDataFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    CocktailliqueurIndexQuery(
+      liqueur: $liqueur
+      cocktailcreator: $cocktailcreator
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        cocktailname
+        cocktailcreator
+        cocktailpicture
+        cocktailfeature
+        cocktailtaste
+        liqueur
+        mixer
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;

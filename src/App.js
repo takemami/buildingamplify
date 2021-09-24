@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import './App.css';
 import { API, graphqlOperation } from 'aws-amplify';
 import { Link, Switch, useHistory, useParams } from 'react-router-dom';
@@ -34,7 +34,8 @@ import { useBeatsInfoStyles } from "@mui-treasury/styles/info/beats";
 // import { listLiqueurData } from './graphql/queries';
 // import { createCocktailData } from './graphql/mutations';
 import * as gqlQueries from './graphql/queries';
-import * as gqlMutations from './graphql/mutations';
+import { ratingClasses } from '@mui/material';
+//import * as gqlMutations from './graphql/mutations';
 // import * as gqlSubscriptions from './graphql/subscriptions';
 
 
@@ -76,7 +77,19 @@ const FullWidthTextField = (props) => {
 }
 
 //画像並べるコンポーネント
-function TitlebarImageList() {
+const TitlebarImageList = (props) => {
+  function handleClick() {
+    var radios = document.getElementsByName("rate");
+    var result;
+    for(var i=0; i<radios.length; i++){
+      if (radios[i].checked) {
+        //選択されたラジオボタンのvalue値を取得する
+        result = radios[i].value;
+        break;
+      }
+    }
+    props.setCup(result);
+  }
   return (
     <Box
       sx={{
@@ -91,26 +104,26 @@ function TitlebarImageList() {
       <ImageListItem key="Subheader" cols={2}>
         <ListSubheader component="div">コップ名</ListSubheader>
       </ImageListItem>
-      {itemData.map((item) => (
-        <ImageListItem key={item.img}>
+      {props.name.map((item) => (
+        <ImageListItem key={item.cuppicture}>
           <div className="selection-group">
-            <input id={item.title} type="radio" name="rate" value={item.title} />
-            <label for={item.title}>
+            <input id={item.cupname} type="radio" name="rate" value={item.cupname} />
+            <label for={item.cupname}>
               <img
-                src={`${item.img}?w=248&fit=crop&auto=format`}
-                srcSet={`${item.img}?w=248&fit=crop&auto=format&dpr=2 2x`}
-                alt={item.title}
+                src={`${item.cuppicture}?w=248&fit=crop&auto=format`}
+                srcSet={`${item.cuppicture}?w=248&fit=crop&auto=format&dpr=2 2x`}
+                alt={item.cupname}
                 loading="lazy"
               />
             </label>
           </div>
           <ImageListItemBar
-            title={item.title}
-            subtitle={item.author}
+            title={item.cupname}
+            subtitle={item.cupcapacity}
             actionIcon={
               <IconButton
                 sx={{ color: "rgba(255, 255, 255, 0.54)" }}
-                aria-label={`info about ${item.title}`}
+                aria-label={`info about ${item.cupname}`}
               >
                 <InfoIcon />
               </IconButton>
@@ -119,6 +132,7 @@ function TitlebarImageList() {
         </ImageListItem>
       ))}
     </ImageList>
+    <Button onClick={() => {handleClick()}} startIcon={<FreeBreakfastIcon/>} variant="outlined">コップ決定</Button>
     </Box>
   );
 }
@@ -222,23 +236,23 @@ function SelectAutoWidth() {
   };
   return (
     <div>
-      <FormControl sx={{ m: 1, minWidth: 80 }}>
+      <FormControl name="form1" sx={{ m: 1, minWidth: 80 }}>
         <InputLabel id="demo-simple-select-autowidth-label">味</InputLabel>
         <Select
-          labelId="demo-simple-select-autowidth-label"
+          name="demo-simple-select-autowidth"
           id="demo-simple-select-autowidth"
           value={age}
           onChange={handleChange}
           autoWidth
           label="Age"
         >
-          <MenuItem value="">
+          <MenuItem name="taste1" value="わからない">
             <em>わからない</em>
           </MenuItem>
-          <MenuItem value={10}>甘い</MenuItem>
-          <MenuItem value={21}>辛い</MenuItem>
-          <MenuItem value={22}>苦い</MenuItem>
-          <MenuItem value={23}>酸っぱい</MenuItem>
+          <MenuItem name="taste1" value="甘い">甘い</MenuItem>
+          <MenuItem name="taste1" value="辛い">辛い</MenuItem>
+          <MenuItem name="taste1" value="苦い">苦い</MenuItem>
+          <MenuItem name="taste1" value="酸っぱい">酸っぱい</MenuItem>
         </Select>
       </FormControl>
     </div>
@@ -424,14 +438,6 @@ const BeatsInfoStyle = (props) => {
 //画面のレイアウト
 //元々の関数
 function App() {
-  
-
-
-  //データ関係の関数
-  
-
-  
-
   //ユーザ情報確認画面
   function UserInfoApp() {
     return (
@@ -449,9 +455,9 @@ function App() {
         </IconLabelButtons>
       </div>
       </div>
-
     );
   };
+
   //ユーザ情報編集画面
   function UserInfoEditApp() {
     return (
@@ -494,27 +500,91 @@ function App() {
     );
   };
 
+
   //カクテル作成画面
   function CreateLiquor2(){
+    const history = useHistory();
+    const [liqtext, setLiqText] = useState([])
+    const [mixtext, setMixText] = useState([])
+    const { name } = useParams();
+    var linkname = '';
+    const [CupList, setCupList] = useState([]);
+    const [cup, setCup] = useState([])
+    async function CocktailData() {
+      const cock = await API.graphql(graphqlOperation(gqlQueries.getCocktailData,{
+        cocktailname: name,
+        cocktailcreator: "管理者",
+      }))
+      const cockUser = await API.graphql(graphqlOperation(gqlQueries.getCocktailData,{
+        cocktailname: name,
+        cocktailcreator: "takematsu",
+      }))
+      var cockliq = '';
+      var cockmix = '';
+      if (cock.data.getCocktailData != null){
+        cockliq = cock.data.getCocktailData.liqueur;
+        cockmix = cock.data.getCocktailData.mixer;
+      }
+      if (cockUser.data.getCocktailData != null) {
+        cockliq = cockUser.data.getCocktailData.liqueur;
+        cockmix = cockUser.data.getCocktailData.mixer;
+      }
+      setLiqText(cockliq);
+      setMixText(cockmix);
+    };
+    useEffect(() => {
+      CocktailData();
+    }, []);
+    const [degreeText, setDegreeText] = useState('');
+    const onChangeLiq = (e) => {setLiqText(() => e.target.value)};
+    const onChangeMix = (e) => {setMixText(() => e.target.value)};
+    const onChangeDegree = (e) => {setDegreeText(() => e.target.value)};
+    
+    function handleClick() {
+      async function CocktailFilteredData() {
+        const cock = await API.graphql(graphqlOperation(gqlQueries.cocktaiLliqandMixIndexQuery,{
+          liqueur: liqtext,
+          mixer: {eq: mixtext},
+        }))
+        console.log(cock.data.CocktaiLliqandMixIndexQuery.items);
+        if ((cock.data.CocktaiLliqandMixIndexQuery.items).length == 0){
+          linkname = '/CreateLiquor/CalResult/'
+          history.push(`/CreateLiquor/CalResult/degree=${degreeText}&liq=${liqtext}&mix=${mixtext}&mix=${cup}`)
+        }else{
+          linkname = '/CreateLiquor/CalResultFiltered/';
+          history.push(`/CreateLiquor/CalResultFiltered/degree=${degreeText}&liq=${liqtext}&mix=${mixtext}&mix=${cup}`)
+        }
+      };
+      CocktailFilteredData();
+      return degreeText;
+    }
+    //コップ一覧表示
+    async function ListCup() {
+      const a = await API.graphql(graphqlOperation(gqlQueries.listCupData)
+      )
+      setCupList(a.data.listCupData.items);
+    }
+    useEffect(() => {
+      ListCup();
+    }, []);
     return (
       <div>
         <p>カクテルを作る</p>
         <div>
-          <FullWidthTextField>リキュール名</FullWidthTextField>
+          <TextField fullwidth label="リキュール名" value={liqtext} onChange={onChangeLiq}>リキュール名</TextField>
         </div> 
         <div> 
-          <FullWidthTextField>ミキサー名</FullWidthTextField>
+        <TextField fullwidth label="ミキサー名" value={mixtext} onChange={onChangeMix}>ミキサー名</TextField>
         </div>
         <div>
-          <FullWidthTextField>度数(%)</FullWidthTextField>
+          <TextField fullwidth label="度数（％）" onChange={onChangeDegree}></TextField>
         </div>
         <div>
-          <TitlebarImageList />
+          <TitlebarImageList name={CupList} setCup={setCup}/>
         </div>
-        {/* <IconLabelButtons children="カクテル作成" /> */}
-        <IconLabelButtons>
-          <Link to="/CreateLiquor/CalResultFiltered" className="linkBlue">カクテル作成</Link>
-        </IconLabelButtons>
+        <Button onClick={() => {handleClick()}} startIcon={<FreeBreakfastIcon/>} variant="outlined">
+          <Link to={`${linkname}${degreeText}&liq=${liqtext}&mix=${mixtext}&mix=${cup}`} className="linkBlue">カクテルを作る</Link>
+        </Button>
       </div>
       
     )
@@ -543,7 +613,6 @@ function App() {
         <ActionAreaCard />
         </div>
       </div>
-
     );
   };
 
@@ -571,19 +640,45 @@ function App() {
             <IconLabelButtons>
               <Link to="/" className="linkBlue">確定</Link>
             </IconLabelButtons>
-          </div>
-          
+          </div>  
         </div>
         <div>
         </div>
       </div>
-
     );
   };
 
   //検索結果（カクテル）画面
   function SearchResultCockApp() {
+    const [cocks, setCocks] = useState([])
+    const [cocksCreator, setCocksCreator] = useState([])
     const { name } = useParams();
+    async function CocktailData() {
+      const cock = await API.graphql(graphqlOperation(gqlQueries.getCocktailData,{
+        cocktailname: name,
+        cocktailcreator: "管理者",
+      }))
+      const cockUser = await API.graphql(graphqlOperation(gqlQueries.getCocktailData,{
+        cocktailname: name,
+        cocktailcreator: "takematsu",
+      }))
+      const cockd = [];
+      const cockdCreator = [];
+      console.log(cock.data.getCocktailData);
+      if (cock.data.getCocktailData != null){
+        cockd.push(cock.data.getCocktailData.cocktailname);
+        cockdCreator.push(cock.data.getCocktailData.cocktailcreator);
+      }
+      if (cockUser.data.getCocktailData != null) {
+        cockd.push(cockUser.data.getCocktailData.cocktailname);
+        cockdCreator.push(cockUser.data.getCocktailData.cocktailcreator);
+      }
+      setCocks([...cocks, cockd]);
+      setCocksCreator([...cocksCreator, cockdCreator]);
+    };
+    useEffect(() => {
+      CocktailData();
+    }, []);
     return (
       <div className="SearchResultCockApp">
       <h1>検索結果</h1>
@@ -598,7 +693,6 @@ function App() {
               </div>
             </div>
           </Grid>
-
           <Grid item xs={8}>
             <div>
               <Box
@@ -608,22 +702,60 @@ function App() {
                   paddingBottom: '20px',
                 }}
               >
+                <div>
+                {cocks} {cocksCreator}
                 <VirtualizedList/>
+                </div>
               </Box>
             </div>
           </Grid>
         </Grid>
-      </Box>   
-        
+      </Box>     
         </div>
-
       </div>
-
     );
   };
 
   //検索結果（味）画面
   function SearchResultTasteApp() {
+    const [cocks, setCocks] = useState([])
+    const [cocksCreator, setCocksCreator] = useState([])
+    const { name } = useParams();
+    async function CocktailData() {
+      const cock = await API.graphql(graphqlOperation(gqlQueries.cocktailtasteIndexQuery,{
+        cocktailtaste: name,
+        cocktailcreator: {eq: '管理者'},
+        sortDirection: 'DESC',
+      }))
+      const cockUser = await API.graphql(graphqlOperation(gqlQueries.cocktailtasteIndexQuery,{
+        cocktailtaste: name,
+        cocktailcreator: {eq: 'takematsu'},
+        sortDirection: 'DESC',
+      }))
+      console.log(cock)
+      const cockd = [];
+      const cockdCreator = [];
+      console.log(cock.data.CocktailtasteIndexQuery);
+      if (cock.data.CocktailtasteIndexQuery != null){
+        for(var i=0; i<((cock.data.CocktailtasteIndexQuery.items).length); i++){
+          const a = cock.data.CocktailtasteIndexQuery.items[i];
+          cockd.push(a.cocktailname);
+          cockdCreator.push(a.cocktailcreator);
+        }
+      }
+      if (cockUser.data.CocktailtasteIndexQuery != null){
+        for(var j=0; j<((cockUser.data.CocktailtasteIndexQuery.items).length); j++){
+          const a = cockUser.data.CocktailtasteIndexQuery.items[j];
+          cockd.push(a.cocktailname);
+          cockdCreator.push(a.cocktailcreator);
+        }
+      }
+      setCocks([...cocks, cockd]);
+      setCocksCreator([...cocksCreator, cockdCreator]);
+    };
+    useEffect(() => {
+      CocktailData();
+    }, []);
     return (
       <div className="SearchResultTasteApp">
       <h1>検索結果</h1>
@@ -634,11 +766,10 @@ function App() {
             <div>
               <p>検索条件</p>
               <div>
-                <p>味：</p>
+                <p>味：{name}</p>
               </div>
             </div>
           </Grid>
-
           <Grid item xs={8}>
             <div>
               <Box
@@ -648,25 +779,64 @@ function App() {
                   paddingBottom: '20px',
                 }}
               >
+                <div>
+                {cocks} {cocksCreator}
                 <VirtualizedList/>
+                </div>
               </Box>
             </div>
           </Grid>
         </Grid>
-      </Box>   
-        
+      </Box>     
         </div>
-
       </div>
-
     );
   };
 
+
   //検索結果（リキュール）画面
   function SearchResultLiqApp() {
+    const [cocks, setCocks] = useState([])
+    const [cocksCreator, setCocksCreator] = useState([])
+    const { name } = useParams();
+    async function CocktailData() {
+      const cock = await API.graphql(graphqlOperation(gqlQueries.cocktailliqueurIndexQuery,{
+        liqueur: name,
+        cocktailcreator: {eq: '管理者'},
+        sortDirection: 'DESC',
+      }))
+      const cockUser = await API.graphql(graphqlOperation(gqlQueries.cocktailliqueurIndexQuery,{
+        liqueur: name,
+        cocktailcreator: {eq: 'takematsu'},
+        sortDirection: 'DESC',
+      }))
+      const cockd = [];
+      const cockdCreator = [];
+      if (cock.data.CocktailliqueurIndexQuery != null){
+        for(var i=0; i<((cock.data.CocktailliqueurIndexQuery.items).length); i++){
+          const a = cock.data.CocktailliqueurIndexQuery.items[i];
+          cockd.push(a.cocktailname);
+          cockdCreator.push(a.cocktailcreator);
+        }
+      }
+      if (cockUser.data.CocktailliqueurIndexQuery != null){
+        for(var j=0; j<((cockUser.data.CocktailliqueurIndexQuery.items).length); j++){
+          const a = cockUser.data.CocktailliqueurIndexQuery.items[j];
+          cockd.push(a.cocktailname);
+          cockdCreator.push(a.cocktailcreator);
+        }
+      }
+      console.log(cockd);
+      console.log(cockdCreator);
+      setCocks([...cocks, cockd]);
+      setCocksCreator([...cocksCreator, cockdCreator]);
+    }; 
+    useEffect(() => {
+      CocktailData();
+    }, []);
     return (
       <div className="SearchResultLiqApp">
-      <h1>検索結果</h1>
+        <h1>検索結果</h1>
       <div>
       <Box sx={{ flexGrow: 1 }}>
         <Grid container spacing={2}>
@@ -674,11 +844,10 @@ function App() {
             <div>
               <p>検索条件</p>
               <div>
-                <p>リキュール名：</p>
+                <p>リキュール名：{name}</p>
               </div>
             </div>
           </Grid>
-
           <Grid item xs={8}>
             <div>
               <Box
@@ -688,17 +857,17 @@ function App() {
                   paddingBottom: '20px',
                 }}
               >
+                <div>
+                {cocks} {cocksCreator}
                 <VirtualizedList/>
+                </div>
               </Box>
             </div>
           </Grid>
         </Grid>
       </Box>   
-        
         </div>
-
       </div>
-
     );
   };
 
@@ -707,46 +876,31 @@ function App() {
   function Home(){
     const [cockText, setCockText] = useState('');
     const [liqText, setLiqText] = useState('');
+    const [makeCockText, setMakeCockText] = useState('');
+    var tasteText = ''; 
     const onChangeCockText = (e) => {setCockText(() => e.target.value)};
     const onChangeLiqText = (e) => {setLiqText(() => e.target.value)};
+    const onChangeMakeCockText = (e) => {setMakeCockText(() => e.target.value)};
     const history = useHistory();
 
-    
-    // useEffect(() => {
-    //   fetchLiqueurs();
-    // }, []);
-
-    // async function onPost() {
-    //   const res = await API.graphql(graphqlOperation(gqlMutations.createCocktailData, { input: {
-    //     cocktailname: "カシスオレンジ",
-    //     cocktailcreator: "管理者",
-    //     liqueur: "カシスリキュール",
-    //     mixer: "オレンジジュース",
-    //   }})); 
-    //   return res;
-    // }
-    // console.log(onPost());
-
-    // async function fetchLiqueurs() {
-    //   const liqueur = await API.graphql({ query: listLiqueurData });
-    //   setCockText(liqueur.data.listLiqueurData.items);
-    //   return liqueur;
-    // }    
-
     function handleClick() {
-      
-      console.log({cockText})
-      async function CocktailData() {
-        const cockData = await API.graphql(graphqlOperation(gqlQueries.getCocktailData, {
-          cocktailname: {cockText},
-          cocktailcreator: "管理者",
-        }))
-        cockData = cockData.data.getCocktailData;
-      }; 
-      console.log(CocktailData.cockData);
-      // console.log({cock});
       history.push(`/SearchResultCock/${cockText}`)
       return cockText;
+    }
+    function handleClick2() {
+      history.push(`/SearchResultLiq/${liqText}`)
+      return liqText;
+    }
+    function handleClick3() {
+      var obj = document.getElementById('demo-simple-select-autowidth');
+      const txt = obj.innerHTML;
+      tasteText = txt;
+      history.push(`/SearchResultTaste/${tasteText}`)
+      return tasteText;
+    }
+    function handleClick4() {
+      history.push(`/CreateLiquor/${makeCockText}`)
+      return makeCockText;
     }
 
     return (
@@ -778,12 +932,10 @@ function App() {
                   <div className="form-group">
                     <label for="cocktail-name"></label>
                     <div>
-                    <p>text : {cockText}</p>
                     <TextField fullwidth label="カクテル名" value={cockText} onChange={onChangeCockText}/>
                     </div>
                     <div>
                     <br></br>
-                    {/* <Button onClick={() => history.push(`/SearchResultCock/${cockText}`)} startIcon={<FreeBreakfastIcon/>} variant="outlined"> */}
                     <Button onClick={() => {handleClick()}} startIcon={<FreeBreakfastIcon/>} variant="outlined">
                       <Link to='/SearchResultCock/:name' className="linkBlue">検索する</Link>
                     </Button>
@@ -795,10 +947,10 @@ function App() {
                 <div className="Cocktail-search">
                     <p>味で検索</p>
                     <label for="taste"></label>
-                    <SelectAutoWidth />
-                    <IconLabelButtons>
-                      <Link to="/SearchResultTaste" className="linkBlue">検索する</Link>
-                    </IconLabelButtons>
+                    <SelectAutoWidth value={tasteText}/>
+                    <Button onClick={() => {handleClick3()}} startIcon={<FreeBreakfastIcon/>} variant="outlined">
+                      <Link to='/SearchResultTaste/:name' className="linkBlue">検索する</Link>
+                    </Button>
                 </div>
 
                 <div className="Cocktail-search">
@@ -808,9 +960,11 @@ function App() {
                     <div>
                     <TextField fullwidth label="リキュール名" value={liqText} onChange={onChangeLiqText}/>
                     </div>
-                    <IconLabelButtons>
-                      <Link to="/SearchResultLiq" className="linkBlue">検索する</Link>
-                    </IconLabelButtons>
+                    <br></br>
+                    <Button onClick={() => {handleClick2()}} startIcon={<FreeBreakfastIcon/>} variant="outlined">
+                      <Link to='/SearchResultLiq/:name' className="linkBlue" >検索する</Link>
+                    </Button>
+                    <br></br><br></br>
                   </div>
                 </div>
               </div>
@@ -820,10 +974,11 @@ function App() {
         </Box>   
         
         <div>
-        <FullWidthTextField>作りたいリキュール名</FullWidthTextField>        
-        <IconLabelButtons>
-          <Link to="/CreateLiquor" className="linkBlue">お酒を作る</Link>
-        </IconLabelButtons>
+        <TextField fullwidth label="作りたいカクテル名" value={makeCockText} onChange={onChangeMakeCockText}>作りたいカクテル名</TextField>
+        {/* <FullWidthTextField>作りたいカクテル名</FullWidthTextField>         */}
+        <Button onClick={() => {handleClick4()}} startIcon={<FreeBreakfastIcon/>} variant="outlined">
+          <Link to="/CreateLiquor/:name" className="linkBlue">お酒を作る</Link>
+        </Button>
         </div>
         </div>
     );
@@ -836,10 +991,11 @@ function App() {
         <Switch>
         <Route exact path="/UserInfo/UserInfoEdit" component={UserInfoEditApp}/>
         <Route exact path="/UserInfo" component={UserInfoApp}/>
-        <Route exact path="/SearchResultLiq" component={SearchResultLiqApp}/>
-        <Route exact path="/SearchResultTaste" component={SearchResultTasteApp}/>
-        <Route exact path="/CreateLiquor/CalResult" component={CalResultApp}/>
-        <Route exact path="/CreateLiquor/CalResultFiltered" component={CalResultFilteredApp}/>
+        <Route exact path="/SearchResultLiq/:name" component={SearchResultLiqApp}/>
+        <Route exact path="/SearchResultTaste/:name" component={SearchResultTasteApp}/>
+        <Route exact path="/CreateLiquor/CalResult/:name" component={CalResultApp}/>
+        <Route exact path="/CreateLiquor/CalResultFiltered/:name" component={CalResultFilteredApp}/>
+        <Route exact path="/CreateLiquor/:name" component={CreateLiquor2}/>
         <Route exact path="/CreateLiquor" component={CreateLiquor2}/>
         <Route exact path="/" component={Home}/>
         <Route exact path="/SearchResultCock/:name" component={SearchResultCockApp}/>
