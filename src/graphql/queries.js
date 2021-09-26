@@ -159,6 +159,8 @@ export const getHistoryData = /* GraphQL */ `
       cocktaildegree
       unixtime
       cupcapacity
+      liqml
+      mixml
       createdAt
       updatedAt
     }
@@ -187,6 +189,47 @@ export const listHistoryData = /* GraphQL */ `
         cocktaildegree
         unixtime
         cupcapacity
+        liqml
+        mixml
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+export const getDegreeHistoryData = /* GraphQL */ `
+  query GetDegreeHistoryData($unixtime: String!) {
+    getDegreeHistoryData(unixtime: $unixtime) {
+      unixtime
+      cockdegree
+      liqml
+      mixml
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const listDegreeHistoryData = /* GraphQL */ `
+  query ListDegreeHistoryData(
+    $unixtime: String
+    $filter: ModelDegreeHistoryDataFilterInput
+    $limit: Int
+    $nextToken: String
+    $sortDirection: ModelSortDirection
+  ) {
+    listDegreeHistoryData(
+      unixtime: $unixtime
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      sortDirection: $sortDirection
+    ) {
+      items {
+        unixtime
+        cockdegree
+        liqml
+        mixml
         createdAt
         updatedAt
       }
@@ -267,6 +310,8 @@ export const historyIndexQuery = /* GraphQL */ `
         cocktaildegree
         unixtime
         cupcapacity
+        liqml
+        mixml
         createdAt
         updatedAt
       }

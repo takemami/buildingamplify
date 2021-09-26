@@ -31,12 +31,10 @@ import NoSsr from "@material-ui/core/NoSsr";
 import GoogleFontLoader from "react-google-font-loader";
 import { Info, InfoSubtitle, InfoTitle } from "@mui-treasury/components/info";
 import { useBeatsInfoStyles } from "@mui-treasury/styles/info/beats";
-// import { listLiqueurData } from './graphql/queries';
-// import { createCocktailData } from './graphql/mutations';
 import * as gqlQueries from './graphql/queries';
-import { ratingClasses } from '@mui/material';
-//import * as gqlMutations from './graphql/mutations';
-// import * as gqlSubscriptions from './graphql/subscriptions';
+import * as gqlMutations from './graphql/mutations';
+import { AuthState, onAuthUIStateChange } from '@aws-amplify/ui-components';
+import { async } from 'regenerator-runtime';
 
 
 
@@ -156,10 +154,38 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     border: 0,
   },
 }));
+//テーブルコンポーネント
 function createData(name, calories, fat, carbs, protein) {
   return { name, calories, fat, carbs, protein };
 }
+
 function CustomizedTables() {
+  const [names, setNames] = useState([]);
+  const [capas, setCapas] = useState([])
+  var capacity = [];
+  var name = [];
+  async function ListContainer() {
+    const a = await API.graphql(graphqlOperation(gqlQueries.listContainerData));
+    // setContainerList(a.data.listContainerData.items);
+    for(var i=0; i < (a.data.listContainerData.items).length; i++){
+      var b = a.data.listContainerData.items[i];
+      capacity.push(b.containercapacity);
+      name.push(b.containername);
+    }
+    setNames([...names, name]);
+    setCapas([...capas, capacity]);
+  }
+  useEffect(() => {
+    ListContainer();
+  }, []);
+  var newCapacity = capas[0];
+  var newName = names[0];
+  if(newCapacity != null){
+    for(var j=0; j<(newCapacity.length); j++){
+      console.log(newCapacity[`${j}`])
+    }
+  }
+
   return (
     <Box
       sx={{
@@ -180,6 +206,25 @@ function CustomizedTables() {
           </TableRow>
         </TableHead>
         <TableBody>
+          <div>
+          {(() => {
+            if(newName != null){
+              const items = [];
+              for (var j=0; j<(newName.length); j++){
+                items.push(
+                  <StyledTableRow key={newName[`${j}`]}>
+                  <StyledTableCell component="th" scope="row">
+                    {newName[`${j}`]}
+                  </StyledTableCell>
+                  {/* <StyledTableCell align="right">{row.calories}</StyledTableCell> */}
+                  {/* <StyledTableCell align="right">{row.fat}</StyledTableCell> */}
+                  </StyledTableRow>
+                )
+              }
+            }
+            return false;
+          })()}
+          </div>
           {rows.map((row) => (
             <StyledTableRow key={row.name}>
               <StyledTableCell component="th" scope="row">
@@ -196,8 +241,47 @@ function CustomizedTables() {
   );
 }
 
-//カードコンポーネント
-function ActionAreaCard() {
+//カードコンポーネント（あり）
+function ActionAreaCard(props) {
+  const liqueurname = props.liqname;
+  const mixername = props.mixname;
+  const [cockfea, setCockfea] = useState('記入なし');
+  const [cockpic, setPic] = useState('画像なし');
+  const [cocktaste, setCocktaste] = useState('記入な');
+  var cockName;
+  const [cockname, setCockname] = useState('');
+  async function CocktailSearch(){
+    const cocktailname = await API.graphql(graphqlOperation(gqlQueries.cocktaiLliqandMixIndexQuery,{
+      liqueur: liqueurname,
+      mixer: {eq: mixername},
+    }));
+    cockName = cocktailname.data.CocktaiLliqandMixIndexQuery.items[0].cocktailname;
+    const cocktailCreator = cocktailname.data.CocktaiLliqandMixIndexQuery.items[0].cocktailcreator;
+    const cockdetail = await API.graphql(graphqlOperation(gqlQueries.getCocktailData,{
+      cocktailname: cockName,
+      cocktailcreator: cocktailCreator,
+    }))
+    setCockname(cockName);
+
+    if(cockdetail.data.getCocktailData.cocktailpicture === null){
+      setPic("https://images.unsplash.com/photo-1551963831-b3b1ca40c98e");
+    }else{
+      setPic(cockdetail.data.getCocktailData.cocktailpicture);
+    }
+
+    if(cockdetail.data.getCocktailData.cocktailfeature !== null){
+      setCockfea(cockdetail.data.getCocktailData.cocktailfeature);
+    }
+
+    if(cockdetail.data.getCocktailData.cocktailtaste !== null){
+      setCocktaste(cockdetail.data.getCocktailData.cocktailtaste);
+      // console.log(cockdetail.data.getCocktailData.cocktailtaste);
+      // console.log(cocktaste);
+    }
+  }
+  useEffect(() => {
+    CocktailSearch();
+  }, []);
   return (
     <Box
       sx={{
@@ -209,16 +293,15 @@ function ActionAreaCard() {
           <CardMedia
             component="img"
             height="140"
-            image="https://images.unsplash.com/photo-1567306301408-9b74779a11af"
+            image={cockpic}
             alt="green iguana"
           />
           <CardContent>
             <Typography gutterBottom variant="h5" component="div">
-              Lizard
+              {cockname} （{cocktaste}）
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Lizards are a widespread group of squamate reptiles, with over 6,000
-              species, ranging across all continents except Antarctica
+              {cockfea}
             </Typography>
           </CardContent>
         </CardActionArea>
@@ -327,7 +410,6 @@ function MenuAppBar() {
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleMenu = (event) => {
-    console.log(event);
     setAnchorEl(event.currentTarget);
   };
 
@@ -435,9 +517,13 @@ const BeatsInfoStyle = (props) => {
 
 
 
+
+
+
 //画面のレイアウト
 //元々の関数
 function App() {
+
   //ユーザ情報確認画面
   function UserInfoApp() {
     return (
@@ -503,6 +589,10 @@ function App() {
 
   //カクテル作成画面
   function CreateLiquor2(){
+    var liqueurDe;
+    var mixerDe;
+    var cupcapacity;
+    var to = {};
     const history = useHistory();
     const [liqtext, setLiqText] = useState([])
     const [mixtext, setMixText] = useState([])
@@ -546,13 +636,51 @@ function App() {
           liqueur: liqtext,
           mixer: {eq: mixtext},
         }))
-        console.log(cock.data.CocktaiLliqandMixIndexQuery.items);
-        if ((cock.data.CocktaiLliqandMixIndexQuery.items).length == 0){
-          linkname = '/CreateLiquor/CalResult/'
-          history.push(`/CreateLiquor/CalResult/degree=${degreeText}&liq=${liqtext}&mix=${mixtext}&mix=${cup}`)
+        const liqdeg = await API.graphql(graphqlOperation(gqlQueries.getLiqueurData, {
+          liqueurname: liqtext, 
+        }));
+        const liqdegree = liqdeg.data.getLiqueurData.liqueurdegree;
+        if ((cock.data.CocktaiLliqandMixIndexQuery.items).length === 0){
+          //リキュールとミキサーの組み合わせがなかったら...
+          if(liqdegree.length === 0){
+            //リキュールデータがなかったら...
+          }else{
+            //リキュールデータがあったら
+            const cupca = await API.graphql(graphqlOperation(gqlQueries.getCupData, {
+              cupname: cup,
+            })); 
+            cupcapacity = cupca.data.getCupData.cupcapacity;
+            const res = await API.graphql(graphqlOperation(gqlMutations.calculateLambda, { username: 'takematsu', liqdegree: liqdegree, cockdegree: degreeText, cupcapa: cupcapacity}));  
+            setDegreeText(res.data.CalculateLambda.cockdegree);
+            liqueurDe = res.data.CalculateLambda.liqml;
+            mixerDe = res.data.CalculateLambda.mixml;
+            linkname = '/CreateLiquor/CalResult'
+            to = {
+              pathname: linkname,
+              search: '?class=A',
+              hash: '#user-hash',
+              state: { degree: degreeText,liq: liqueurDe, mix: mixerDe, cup: cupcapacity, liqueurname: liqtext, mixername: mixtext }
+            };
+            history.push(`/CreateLiquor/CalResult/degree=${degreeText}&liq=${liqueurDe}&mix=${mixerDe}&cup=${cupcapacity}&liqname=${liqtext}&mixname=${mixtext}`)
+          } 
         }else{
-          linkname = '/CreateLiquor/CalResultFiltered/';
-          history.push(`/CreateLiquor/CalResultFiltered/degree=${degreeText}&liq=${liqtext}&mix=${mixtext}&mix=${cup}`)
+          //リキュールとミキサーの組み合わせがあったら
+          const cupca = await API.graphql(graphqlOperation(gqlQueries.getCupData, {
+            cupname: cup,
+          })); 
+          cupcapacity = cupca.data.getCupData.cupcapacity;
+          const res = await API.graphql(graphqlOperation(gqlMutations.calculateLambda, { username: 'takematsu', liqdegree: liqdegree, cockdegree: degreeText, cupcapa: cupcapacity}));  
+          setDegreeText(res.data.CalculateLambda.cockdegree);
+          liqueurDe = res.data.CalculateLambda.liqml;
+          mixerDe = res.data.CalculateLambda.mixml;
+          linkname = '/CreateLiquor/CalResultFiltered';
+          to = {
+            pathname: linkname,
+            search: '?class=A',
+            hash: '#user-hash',
+            state: { degree: degreeText,liq: liqueurDe, mix: mixerDe, cup: cupcapacity, liqueurname: liqtext, mixername: mixtext }
+          };
+          history.push(`/CreateLiquor/CalResultFiltered/degree=${degreeText}&liq=${liqueurDe}&mix=${mixerDe}&cup=${cupcapacity}&liqname=${liqtext}&mixname=${mixtext}`)
         }
       };
       CocktailFilteredData();
@@ -572,36 +700,70 @@ function App() {
         <p>カクテルを作る</p>
         <div>
           <TextField fullwidth label="リキュール名" value={liqtext} onChange={onChangeLiq}>リキュール名</TextField>
-        </div> 
+        </div><br></br>
         <div> 
         <TextField fullwidth label="ミキサー名" value={mixtext} onChange={onChangeMix}>ミキサー名</TextField>
-        </div>
+        </div><br></br>
         <div>
           <TextField fullwidth label="度数（％）" onChange={onChangeDegree}></TextField>
-        </div>
+        </div><br></br>
         <div>
           <TitlebarImageList name={CupList} setCup={setCup}/>
         </div>
         <Button onClick={() => {handleClick()}} startIcon={<FreeBreakfastIcon/>} variant="outlined">
-          <Link to={`${linkname}${degreeText}&liq=${liqtext}&mix=${mixtext}&mix=${cup}`} className="linkBlue">カクテルを作る</Link>
+          <Link to={`${linkname}/degree=${degreeText}&liq=${liqueurDe}&mix=${mixerDe}&cup=${cupcapacity}&liqname=${liqtext}&mixname=${mixtext}`} className="linkBlue">カクテルを作る</Link>
         </Button>
       </div>
-      
     )
   }
 
 
   //計算結果（該当あり）画面
   function CalResultFilteredApp() {
+    const { name } = useParams();
+    if (name) {
+      //前の情報
+      var params = {}
+      name.split('&').forEach( param => {
+        const temp = param.split('=')
+        //pramsオブジェクトにパラメータを追加
+        params = {
+          ...params,
+          [temp[0]]: temp[1]
+        }
+      })
+    }
+    //比率の計算
+    var x_big;
+    var x_small;
+    var qua;//商
+    var mod;//あまり
+    var liq = params.liq;
+    var mix = params.mix;
+    x_big = Math.max(params.liq, params.mix);
+    x_small = Math.min(params.liq, params.mix);
+    for (;;){
+      qua = x_big / x_small;
+      mod = x_big % x_small;
+      
+      if(mod == 0){
+        break;
+      }
+      x_big = x_small;
+      x_small = mod;
+    }    
+    var kouyaku = x_small
+    liq /= kouyaku;
+    mix /= kouyaku;
     return (
       <div className="CalResultFilteredApp">
         <div className="CalNumber">
           <h1>計算結果</h1>
           <ul>
-            <li>カクテル：10ml、ミキサー：10ml</li>
-            <li>カクテル：ミキサー ＝ 1：1</li>
-            <li>身の回りの容器での杯数</li>
-            <CustomizedTables />
+            <li>リキュール：{params.liq}ml、ミキサー：{params.mix}ml</li>
+            <li>リキュール：ミキサー ＝ {liq}：{mix}</li>
+            {/* <li>身の回りの容器での杯数</li> */}
+            {/* <CustomizedTables /> */}
           </ul>
         </div>
 
@@ -610,7 +772,7 @@ function App() {
           
         </div>
         <div>
-        <ActionAreaCard />
+        <ActionAreaCard liqname={params.liqname} mixname={params.mixname}/>
         </div>
       </div>
     );
@@ -618,28 +780,99 @@ function App() {
 
   //計算結果（該当なし）画面
   function CalResultApp() {
+    const [cockText, setCockText] = useState('');
+    const { name } = useParams();
+    var tasteText = ''; 
+    if (name) {
+      //前の情報
+      var params = {}
+      name.split('&').forEach( param => {
+        const temp = param.split('=')
+        //pramsオブジェクトにパラメータを追加
+        params = {
+          ...params,
+          [temp[0]]: temp[1]
+        }
+      })
+    }
+    const onChangeCockText = (e) => {setCockText(() => e.target.value)};
+
+    function handleClick(){
+      async function CreateOriginalCocktail(){
+        var obj = document.getElementById('demo-simple-select-autowidth');
+        const txt = obj.innerHTML;
+        tasteText = txt;
+        //同じものがないか確かめる
+        const cock = await API.graphql(graphqlOperation(gqlQueries.getCocktailData,{
+          cocktailname: cockText,
+          cocktailcreator: "管理者",
+        }))
+        const cockUser = await API.graphql(graphqlOperation(gqlQueries.getCocktailData,{
+          cocktailname: cockText,
+          cocktailcreator: "takematsu",
+        }))
+        if ((cock.data.getCocktailData == null) && (cockUser.data.getCocktailData == null)){
+          const cockUser = await API.graphql(graphqlOperation(gqlMutations.createCocktailData,{
+            input: {
+              cocktailname: cockText,
+              cocktailcreator: "takematsu",
+              cocktailtaste: tasteText,
+              liqueur: params.liqname,
+              mixer: params.mixname,
+              cocktailpicture: "",
+              cocktailfeature: "",
+            }
+          }))
+        }else{
+        }
+      }
+      CreateOriginalCocktail();
+    }
+    
+    //比率の計算
+    var x_big;
+    var x_small;
+    var qua;//商
+    var mod;//あまり
+    var liq = params.liq;
+    var mix = params.mix;
+    x_big = Math.max(params.liq, params.mix);
+    x_small = Math.min(params.liq, params.mix);
+    for (;;){
+      qua = x_big / x_small;
+      mod = x_big % x_small;
+      
+      if(mod == 0){
+        break;
+      }
+      x_big = x_small;
+      x_small = mod;
+    }    
+    var kouyaku = x_small
+    liq /= kouyaku;
+    mix /= kouyaku;
     return (
       <div className="CalResultApp">
         <div className="CalNumber">
           <h1>計算結果</h1>
           <ul>
-            <li>カクテル：10ml、ミキサー：10ml</li>
-            <li>カクテル：ミキサー ＝ 1：1</li>
-            <li>身の回りの容器での杯数</li>
-            <CustomizedTables />
+            <li>リキュール：{params.liq}ml、ミキサー：{params.mix}ml</li>
+            <li>リキュール：ミキサー ＝ {liq}：{mix}</li>
+            {/* <li>身の回りの容器での杯数</li>
+            <CustomizedTables /> */}
           </ul>
         </div>
 
         <div>
           <h1>オリジナルカクテル情報の入力</h1>
           <div>
-            <FullWidthTextField>オリジナルカクテル名</FullWidthTextField>
+            <TextField  value={cockText} onChange={onChangeCockText}>オリジナルカクテル名</TextField>
           </div>
           <div><SelectAutoWidth /></div>
           <div>
-            <IconLabelButtons>
+            <Button onClick={() => {handleClick()}} startIcon={<FreeBreakfastIcon/>} variant="outlined">
               <Link to="/" className="linkBlue">確定</Link>
-            </IconLabelButtons>
+            </Button>
           </div>  
         </div>
         <div>
@@ -664,7 +897,6 @@ function App() {
       }))
       const cockd = [];
       const cockdCreator = [];
-      console.log(cock.data.getCocktailData);
       if (cock.data.getCocktailData != null){
         cockd.push(cock.data.getCocktailData.cocktailname);
         cockdCreator.push(cock.data.getCocktailData.cocktailcreator);
@@ -679,6 +911,7 @@ function App() {
     useEffect(() => {
       CocktailData();
     }, []);
+    var cockss = cocks[0];
     return (
       <div className="SearchResultCockApp">
       <h1>検索結果</h1>
@@ -703,8 +936,16 @@ function App() {
                 }}
               >
                 <div>
-                {cocks} {cocksCreator}
-                <VirtualizedList/>
+                {(() => {
+                  if(cockss != null){
+                    const items = [];
+                    for (var j=0; j<(cockss.length); j++){
+                      items.push(<li>{cockss[`${j}`]}</li>)
+                    }
+                    return <ul>{items}</ul>
+                  }
+                  return false;
+                })()}
                 </div>
               </Box>
             </div>
@@ -732,10 +973,8 @@ function App() {
         cocktailcreator: {eq: 'takematsu'},
         sortDirection: 'DESC',
       }))
-      console.log(cock)
       const cockd = [];
       const cockdCreator = [];
-      console.log(cock.data.CocktailtasteIndexQuery);
       if (cock.data.CocktailtasteIndexQuery != null){
         for(var i=0; i<((cock.data.CocktailtasteIndexQuery.items).length); i++){
           const a = cock.data.CocktailtasteIndexQuery.items[i];
@@ -756,6 +995,7 @@ function App() {
     useEffect(() => {
       CocktailData();
     }, []);
+    var cockss = cocks[0];
     return (
       <div className="SearchResultTasteApp">
       <h1>検索結果</h1>
@@ -780,8 +1020,16 @@ function App() {
                 }}
               >
                 <div>
-                {cocks} {cocksCreator}
-                <VirtualizedList/>
+                {(() => {
+                  if(cockss != null){
+                    const items = [];
+                    for (var j=0; j<(cockss.length); j++){
+                      items.push(<li>{cockss[`${j}`]}</li>)
+                    }
+                    return <ul>{items}</ul>
+                  }
+                  return false;
+                })()}
                 </div>
               </Box>
             </div>
@@ -796,9 +1044,12 @@ function App() {
 
   //検索結果（リキュール）画面
   function SearchResultLiqApp() {
-    const [cocks, setCocks] = useState([])
+    const [cocks, setCocks] = useState([]);
     const [cocksCreator, setCocksCreator] = useState([])
     const { name } = useParams();
+    var cockd = []
+    var cockdCreator = []
+
     async function CocktailData() {
       const cock = await API.graphql(graphqlOperation(gqlQueries.cocktailliqueurIndexQuery,{
         liqueur: name,
@@ -810,8 +1061,6 @@ function App() {
         cocktailcreator: {eq: 'takematsu'},
         sortDirection: 'DESC',
       }))
-      const cockd = [];
-      const cockdCreator = [];
       if (cock.data.CocktailliqueurIndexQuery != null){
         for(var i=0; i<((cock.data.CocktailliqueurIndexQuery.items).length); i++){
           const a = cock.data.CocktailliqueurIndexQuery.items[i];
@@ -826,14 +1075,23 @@ function App() {
           cockdCreator.push(a.cocktailcreator);
         }
       }
-      console.log(cockd);
-      console.log(cockdCreator);
-      setCocks([...cocks, cockd]);
-      setCocksCreator([...cocksCreator, cockdCreator]);
-    }; 
+      setCocks([...cocks, cockd])
+      setCocksCreator([...cocksCreator, cockdCreator])
+
+    };
+    
     useEffect(() => {
       CocktailData();
     }, []);
+    
+    var cockss = cocks[0];
+    // if(cockss != null){
+    //   for(var j=0; j<(cockss.length); j++){
+    //     console.log(cockss[`${j}`])
+    //   }
+    //   console.log(Object.keys(cockss))
+    // }
+
     return (
       <div className="SearchResultLiqApp">
         <h1>検索結果</h1>
@@ -858,8 +1116,17 @@ function App() {
                 }}
               >
                 <div>
-                {cocks} {cocksCreator}
-                <VirtualizedList/>
+                {(() => {
+                  if(cockss != null){
+                    const items = [];
+                    for (var j=0; j<(cockss.length); j++){
+                      items.push(<li>{cockss[`${j}`]}</li>)
+                    }
+                    return <ul>{items}</ul>
+                  }
+                  return false;
+                })()}
+                {/* <VirtualizedList/> */}
                 </div>
               </Box>
             </div>
@@ -1013,68 +1280,6 @@ export default withAuthenticator(App);
 
 
 //データ例
-const itemData = [
-  {
-    img: "https://images.unsplash.com/photo-1551963831-b3b1ca40c98e",
-    title: "Breakfast",
-    ml: "@bkristastucchio",
-  },
-  {
-    img: "https://images.unsplash.com/photo-1551782450-a2132b4ba21d",
-    title: "Burger",
-    ml: "@rollelflex_graphy726"
-  },
-  {
-    img: "https://images.unsplash.com/photo-1522770179533-24471fcdba45",
-    title: "Camera",
-    ml: "@helloimnik"
-  },
-  {
-    img: "https://images.unsplash.com/photo-1444418776041-9c7e33cc5a9c",
-    title: "Coffee",
-    ml: "@nolanissac",
-  },
-  {
-    img: "https://images.unsplash.com/photo-1533827432537-70133748f5c8",
-    title: "Hats",
-    ml: "@hjrc33",
-  },
-  {
-    img: "https://images.unsplash.com/photo-1558642452-9d2a7deb7f62",
-    title: "Honey",
-    ml: "@arwinneil",
-  },
-  {
-    img: "https://images.unsplash.com/photo-1516802273409-68526ee1bdd6",
-    title: "Basketball",
-    ml: "@tjdragotta"
-  },
-  {
-    img: "https://images.unsplash.com/photo-1518756131217-31eb79b20e8f",
-    title: "Fern",
-    ml: "@katie_wasserman"
-  },
-  {
-    img: "https://images.unsplash.com/photo-1597645587822-e99fa5d45d25",
-    title: "Mushrooms",
-    ml: "@silverdalex",
-  },
-  {
-    img: "https://images.unsplash.com/photo-1567306301408-9b74779a11af",
-    title: "Tomato basil",
-    ml: "@shelleypauls"
-  },
-  {
-    img: "https://images.unsplash.com/photo-1471357674240-e1a485acb3e1",
-    title: "Sea star",
-    ml: "@peterlaster"
-  },
-  {
-    img: "https://images.unsplash.com/photo-1589118949245-7d38baf380d6",
-    title: "Bike",
-    ml: "@southside_customs",
-  }
-];
 
 const rows = [
   createData('Frozen yoghurt', 159, 6.0, 24, 4.0),

@@ -31,6 +31,19 @@ type HistoryData @model
     cocktaildegree: Int
     unixtime: Int
     cupcapacity: Int
+    liqml: Int
+    mixml: Int
+}
+
+type DegreeHistoryData @model 
+  @key(fields: ["unixtime"]) 
+  {
+    unixtime: String!
+    cockdegree: Int
+    liqml: Int
+    mixml: Int
+    createdAt: AWSDateTime
+    updatedAt: AWSDateTime
 }
 
 type CocktailData @model 
@@ -48,4 +61,17 @@ type CocktailData @model
     cocktailtaste: String
     liqueur: String
     mixer: String
+}
+
+type Mutation
+{
+  CalculateLambda(
+    username: String!
+		liqdegree: Int!
+    cockdegree: Int!
+    cupcapa: Int!
+    createdAt: AWSDateTime
+    updatedAt: AWSDateTime
+	): DegreeHistoryData
+    @function(name: "CalculateLambda-dev")
 }

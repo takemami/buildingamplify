@@ -1,6 +1,32 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const calculateLambda = /* GraphQL */ `
+  mutation CalculateLambda(
+    $username: String!
+    $liqdegree: Int!
+    $cockdegree: Int!
+    $cupcapa: Int!
+    $createdAt: AWSDateTime
+    $updatedAt: AWSDateTime
+  ) {
+    CalculateLambda(
+      username: $username
+      liqdegree: $liqdegree
+      cockdegree: $cockdegree
+      cupcapa: $cupcapa
+      createdAt: $createdAt
+      updatedAt: $updatedAt
+    ) {
+      unixtime
+      cockdegree
+      liqml
+      mixml
+      createdAt
+      updatedAt
+    }
+  }
+`;
 export const createLiqueurData = /* GraphQL */ `
   mutation CreateLiqueurData(
     $input: CreateLiqueurDataInput!
@@ -180,6 +206,8 @@ export const createHistoryData = /* GraphQL */ `
       cocktaildegree
       unixtime
       cupcapacity
+      liqml
+      mixml
       createdAt
       updatedAt
     }
@@ -196,6 +224,8 @@ export const updateHistoryData = /* GraphQL */ `
       cocktaildegree
       unixtime
       cupcapacity
+      liqml
+      mixml
       createdAt
       updatedAt
     }
@@ -212,6 +242,53 @@ export const deleteHistoryData = /* GraphQL */ `
       cocktaildegree
       unixtime
       cupcapacity
+      liqml
+      mixml
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const createDegreeHistoryData = /* GraphQL */ `
+  mutation CreateDegreeHistoryData(
+    $input: CreateDegreeHistoryDataInput!
+    $condition: ModelDegreeHistoryDataConditionInput
+  ) {
+    createDegreeHistoryData(input: $input, condition: $condition) {
+      unixtime
+      cockdegree
+      liqml
+      mixml
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const updateDegreeHistoryData = /* GraphQL */ `
+  mutation UpdateDegreeHistoryData(
+    $input: UpdateDegreeHistoryDataInput!
+    $condition: ModelDegreeHistoryDataConditionInput
+  ) {
+    updateDegreeHistoryData(input: $input, condition: $condition) {
+      unixtime
+      cockdegree
+      liqml
+      mixml
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const deleteDegreeHistoryData = /* GraphQL */ `
+  mutation DeleteDegreeHistoryData(
+    $input: DeleteDegreeHistoryDataInput!
+    $condition: ModelDegreeHistoryDataConditionInput
+  ) {
+    deleteDegreeHistoryData(input: $input, condition: $condition) {
+      unixtime
+      cockdegree
+      liqml
+      mixml
       createdAt
       updatedAt
     }

@@ -141,6 +141,8 @@ export const onCreateHistoryData = /* GraphQL */ `
       cocktaildegree
       unixtime
       cupcapacity
+      liqml
+      mixml
       createdAt
       updatedAt
     }
@@ -154,6 +156,8 @@ export const onUpdateHistoryData = /* GraphQL */ `
       cocktaildegree
       unixtime
       cupcapacity
+      liqml
+      mixml
       createdAt
       updatedAt
     }
@@ -167,6 +171,44 @@ export const onDeleteHistoryData = /* GraphQL */ `
       cocktaildegree
       unixtime
       cupcapacity
+      liqml
+      mixml
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onCreateDegreeHistoryData = /* GraphQL */ `
+  subscription OnCreateDegreeHistoryData {
+    onCreateDegreeHistoryData {
+      unixtime
+      cockdegree
+      liqml
+      mixml
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onUpdateDegreeHistoryData = /* GraphQL */ `
+  subscription OnUpdateDegreeHistoryData {
+    onUpdateDegreeHistoryData {
+      unixtime
+      cockdegree
+      liqml
+      mixml
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onDeleteDegreeHistoryData = /* GraphQL */ `
+  subscription OnDeleteDegreeHistoryData {
+    onDeleteDegreeHistoryData {
+      unixtime
+      cockdegree
+      liqml
+      mixml
       createdAt
       updatedAt
     }

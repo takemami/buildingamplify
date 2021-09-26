@@ -47,5 +47,23 @@
       "service": "S3",
       "providerPlugin": "awscloudformation"
     }
+  },
+  "function": {
+    "CalculateLambda": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": [
+        {
+          "category": "api",
+          "resourceName": "amplifyapp",
+          "attributes": [
+            "GraphQLAPIIdOutput",
+            "GraphQLAPIEndpointOutput",
+            "GraphQLAPIKeyOutput"
+          ]
+        }
+      ]
+    }
   }
 }

@@ -14,6 +14,12 @@
     "categories": {
       "auth": {
         "amplifyappc2a9ea47": {}
+      },
+      "function": {
+        "CalculateLambda": {
+          "deploymentBucketName": "amplify-amplifyapp-dev-175506-deployment",
+          "s3Key": "amplify-builds/CalculateLambda-4d58622f7567706e644c-build.zip"
+        }
       }
     }
   }
