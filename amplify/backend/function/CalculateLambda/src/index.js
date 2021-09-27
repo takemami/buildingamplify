@@ -91,8 +91,8 @@ exports.handler = async (event, context, callback) => {
     //const res = await graphqlClient.mutate(DegreeHistoryDataInput);
     // const post = res.data.createDegreeHistoryData;
     const post = DegreeHistoryDataInput.variables.input;
-    const post2 = UserHistoryDataUpdate.variables.input;
-    return post, post2;
+    // const post2 = UserHistoryDataUpdate.variables.input;
+    return post;
 };
 
 const createDegreeHistoryData = /* GraphQL */ `
