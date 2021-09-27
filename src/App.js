@@ -869,9 +869,9 @@ function App() {
           // }))
         }else{
         }
+      }
+      CreateOriginalCocktail();
     }
-    CreateOriginalCocktail();
-  }
     
     //比率の計算
     var x_big;
