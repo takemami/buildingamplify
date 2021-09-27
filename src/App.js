@@ -5,13 +5,17 @@ import { Link, Switch, useHistory, useParams } from 'react-router-dom';
 import { BrowserRouter as Router, Route } from 'react-router-dom'
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react';
 import { Grid, Box, ListItem, ListItemText } from '@material-ui/core';
-import { ImageList, ImageListItem, ImageListItemBar, ListItemButton, ListSubheader, TextField } from '@mui/material';
+import { FixedSizeList } from 'react-window';
+import { Autocomplete, ImageList, ImageListItem, ImageListItemBar, ListItemButton, ListSubheader, TextField } from '@mui/material';
 import { AppBar, Toolbar, IconButton, Typography, Button, Stack, CardActionArea } from '@mui/material';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import InfoIcon from '@mui/icons-material/Info';
 import FreeBreakfastIcon from '@mui/icons-material/FreeBreakfast';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+// import  {styled}  from '@mui/material/styles';
+// import TableCell, { tableCellClasses } from '@mui/material/TableCell';
+// import TableRow from '@mui/material/TableRow';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
@@ -24,7 +28,9 @@ import { Info, InfoSubtitle, InfoTitle } from "@mui-treasury/components/info";
 import { useBeatsInfoStyles } from "@mui-treasury/styles/info/beats";
 import * as gqlQueries from './graphql/queries';
 import * as gqlMutations from './graphql/mutations';
-import { useMountedState } from 'react-use';
+import { useStateIfMounted } from "use-state-if-mounted";
+import { async } from 'regenerator-runtime';
+import axios from 'axios';
 
 
 
@@ -271,19 +277,7 @@ function ActionAreaCard(props) {
     }
   }
   useEffect(() => {
-    let unmounted = false
     CocktailSearch();
-    setTimeout(() => {
-      if (!unmounted) {
-        setCockfea(false)
-        setPic(false)
-        setCocktaste(false)
-      }
-    }, 1500)
-    // clean up関数（Unmount時の処理）
-    return () => {
-      unmounted = true
-    }
   }, []);
   return (
     <Box
@@ -624,8 +618,7 @@ function App() {
           cocktailname: name,
           cocktailcreator: currentUserName,
         }))
-        // var cockliq = '';
-        // var cockmix = '';
+        
         if (cock.data.getCocktailData != null){
           cockliq = cock.data.getCocktailData.liqueur;
           cockmix = cock.data.getCocktailData.mixer;
@@ -634,28 +627,16 @@ function App() {
           cockliq = cockUser.data.getCocktailData.liqueur;
           cockmix = cockUser.data.getCocktailData.mixer;
         }
-        setLiqText(cockliq);
-        setMixText(cockmix);
+        // setLiqText(cockliq);
+        // setMixText(cockmix);
       }
     };
-    const isMounted = useMountedState();
     useEffect(() => {
+      const source = axios.CancelToken.source();
       CocktailData();
-    //   let unmounted = false
-    // // async await でも同様、const data = await getData();
-    //   setTimeout(() => {
-    //     if (!unmounted) {
-    //       setLiqText(false)
-    //       setMixText(false)
-    //     }
-    //   }, 20000)
-
-      // clean up関数（Unmount時の処理）
-      // return () => {
-      //   unmounted = true
-      // }
-      
-      
+      return () => {
+        source.cancel("APIはキャンセルされました");
+      }
     }, []);
     const [degreeText, setDegreeText] = useState('');
     const onChangeLiq = (e) => {setLiqText(() => e.target.value)};
@@ -690,14 +671,12 @@ function App() {
             liqueurDe = res.data.CalculateLambda.liqml;
             mixerDe = res.data.CalculateLambda.mixml;
             linkname = '/CreateLiquor/CalResult';
-            const Historymake = await API.graphql(graphqlOperation(gqlMutations.createUserHistoryData,{
+            await API.graphql(graphqlOperation(gqlMutations.createUserHistoryData,{
               input: {
                 unixtime: b,
                 username: currentUserName,
                 cocktaildegree: degreeText,
                 cupcapacity: cupcapacity,
-                liqml: liqueurDe,
-                mixml: mixerDe
               }
             }))
             // to = {
@@ -722,21 +701,25 @@ function App() {
           liqueurDe = res.data.CalculateLambda.liqml;
           mixerDe = res.data.CalculateLambda.mixml;
           linkname = '/CreateLiquor/CalResultFiltered';
-          const cocktailName = cock.data.CocktaiLliqandMixIndexQuery.items.cocktailname;
-          const Historymake = await API.graphql(graphqlOperation(gqlMutations.createUserHistoryData,{
+          await API.graphql(graphqlOperation(gqlMutations.createUserHistoryData,{
             input: {
+              cocktailname: name,
               unixtime: b,
               username: currentUserName,
               cocktaildegree: degreeText,
               cupcapacity: cupcapacity,
-              liqml: liqueurDe,
-              mixml: mixerDe,
-              cocktailname: cocktailName 
             }
           }))
+          // to = {
+          //   pathname: linkname,
+          //   search: '?class=A',
+          //   hash: '#user-hash',
+          //   state: { degree: degreeText,liq: liqueurDe, mix: mixerDe, cup: cupcapacity, liqueurname: liqtext, mixername: mixtext }
+          // };
           history.push(`/CreateLiquor/CalResultFiltered/degree=${degreeText}&liq=${liqueurDe}&mix=${mixerDe}&cup=${cupcapacity}&liqname=${liqtext}&mixname=${mixtext}&time=${b}`)
         }
       };
+      
       CocktailFilteredData();
       return degreeText;
     }
@@ -848,6 +831,7 @@ function App() {
         }
       })
     }
+    console.log(params);
     const onChangeCockText = (e) => {setCockText(() => e.target.value)};
 
     function handleClick(){
@@ -876,18 +860,18 @@ function App() {
               cocktailfeature: "",
             }
           }))
-          await API.graphql(graphqlOperation(gqlMutations.updateUserHistoryData,{
-            input: {
-              username: currentUserName,
-              unixtime: params.time,
-              cocktailname: cockText,
-            }
-          }))
+          // await API.graphql(graphqlOperation(gqlMutations.updateUserHistoryData,{
+          //   input: {
+          //     username: currentUserName,
+          //     unixtime: params.b,
+          //     cocktailname: cockText,
+          //   }
+          // }))
         }else{
         }
-      }
-      CreateOriginalCocktail();
     }
+    CreateOriginalCocktail();
+  }
     
     //比率の計算
     var x_big;
@@ -969,12 +953,7 @@ function App() {
       setCocksCreator([...cocksCreator, cockdCreator]);
     };
     useEffect(() => {
-      let unmounted = false;
       CocktailData();
-      // clean up関数（Unmount時の処理）
-      return () => {
-        unmounted = true
-      }
     }, []);
     var cockss = cocks[0];
     return (
@@ -1058,12 +1037,7 @@ function App() {
       setCocksCreator([...cocksCreator, cockdCreator]);
     };
     useEffect(() => {
-      let unmounted = false
       CocktailData();
-      // clean up関数（Unmount時の処理）
-      return () => {
-        unmounted = true
-      }
     }, []);
     var cockss = cocks[0];
     return (
@@ -1151,12 +1125,7 @@ function App() {
     };
     
     useEffect(() => {
-      let unmounted = false
       CocktailData();
-      // clean up関数（Unmount時の処理）
-      return () => {
-        unmounted = true
-      }
     }, []);
     
     var cockss = cocks[0];
@@ -1212,39 +1181,11 @@ function App() {
     const [cockText, setCockText] = useState('');
     const [liqText, setLiqText] = useState('');
     const [makeCockText, setMakeCockText] = useState('');
-    const [cockname, setCockname] = useState('');
-    const [cockuser, setCockuser] = useState('');
     var tasteText = ''; 
     const onChangeCockText = (e) => {setCockText(() => e.target.value)};
     const onChangeLiqText = (e) => {setLiqText(() => e.target.value)};
     const onChangeMakeCockText = (e) => {setMakeCockText(() => e.target.value)};
     const history = useHistory();
-    var cockna = [];
-    var cockus = [];
-    // async function HistoryData() {
-    //   const history = await API.graphql(graphqlOperation(gqlQueries.userHistoryIndexQuery,{
-    //     username: currentUserName
-    //   }));
-    //   if (history.data.UserHistoryIndexQuery === null){
-    //   }else{
-    //     for(var i=0; i<((history.data.UserHistoryIndexQuery.items).length); i++){
-    //       const a = history.data.UserHistoryIndexQuery.items[i];
-    //       cockna.push(a.cocktailname);
-    //       cockus.push(a.username);
-    //     }
-    //   }
-    //   setCockname([...cockname, cockna])
-    //   setCockuser([...cockuser, cockus])
-      
-    // };
-
-    // useEffect(() => {
-    //   HistoryData();
-    // }, []);
-    
-    var HistoryUserList = cockuser[0];
-    var HistoryCocktailNameList = cockname[0];
-
     function handleClick() {
       history.push(`/SearchResultCock/${cockText}`)
       return cockText;
@@ -1271,17 +1212,17 @@ function App() {
           <Grid container spacing={2}>
             <Grid item xs={6}>
               <div className="Cock-history">
-                <p>最近作ったカクテル</p>
-                {/* {(() => {
-                  if(HistoryUserList != null){
-                    const items = [];
-                    for (var j=0; j<(HistoryUserList.length); j++){
-                      items.push(<li>{HistoryUserList[`${j}`]}（{HistoryCocktailNameList[`${j}`]}）</li>)
-                    }
-                    return <ul>{items}</ul>
-                  }
-                  return false;
-                })()} */}
+                <p></p>
+                <FixedSizeList
+                  height={500}
+                  width={Autocomplete}
+                  itemSize={46}
+                  itemCount={200}
+                  overscanCount={5}
+                >
+                  {/* {historyocktail} */}
+                  {renderRow}
+                </FixedSizeList>
               </div>
             </Grid>
 
