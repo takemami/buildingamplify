@@ -7,6 +7,7 @@ export const calculateLambda = /* GraphQL */ `
     $liqdegree: Int!
     $cockdegree: Int!
     $cupcapa: Int!
+    $unixtime: Int!
     $createdAt: AWSDateTime
     $updatedAt: AWSDateTime
   ) {
@@ -15,6 +16,7 @@ export const calculateLambda = /* GraphQL */ `
       liqdegree: $liqdegree
       cockdegree: $cockdegree
       cupcapa: $cupcapa
+      unixtime: $unixtime
       createdAt: $createdAt
       updatedAt: $updatedAt
     ) {
@@ -241,6 +243,60 @@ export const deleteHistoryData = /* GraphQL */ `
       cocktailname
       cocktaildegree
       unixtime
+      cupcapacity
+      liqml
+      mixml
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const createUserHistoryData = /* GraphQL */ `
+  mutation CreateUserHistoryData(
+    $input: CreateUserHistoryDataInput!
+    $condition: ModelUserHistoryDataConditionInput
+  ) {
+    createUserHistoryData(input: $input, condition: $condition) {
+      username
+      unixtime
+      cocktailname
+      cocktaildegree
+      cupcapacity
+      liqml
+      mixml
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const updateUserHistoryData = /* GraphQL */ `
+  mutation UpdateUserHistoryData(
+    $input: UpdateUserHistoryDataInput!
+    $condition: ModelUserHistoryDataConditionInput
+  ) {
+    updateUserHistoryData(input: $input, condition: $condition) {
+      username
+      unixtime
+      cocktailname
+      cocktaildegree
+      cupcapacity
+      liqml
+      mixml
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const deleteUserHistoryData = /* GraphQL */ `
+  mutation DeleteUserHistoryData(
+    $input: DeleteUserHistoryDataInput!
+    $condition: ModelUserHistoryDataConditionInput
+  ) {
+    deleteUserHistoryData(input: $input, condition: $condition) {
+      username
+      unixtime
+      cocktailname
+      cocktaildegree
       cupcapacity
       liqml
       mixml

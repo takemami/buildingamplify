@@ -178,6 +178,51 @@ export const onDeleteHistoryData = /* GraphQL */ `
     }
   }
 `;
+export const onCreateUserHistoryData = /* GraphQL */ `
+  subscription OnCreateUserHistoryData {
+    onCreateUserHistoryData {
+      username
+      unixtime
+      cocktailname
+      cocktaildegree
+      cupcapacity
+      liqml
+      mixml
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onUpdateUserHistoryData = /* GraphQL */ `
+  subscription OnUpdateUserHistoryData {
+    onUpdateUserHistoryData {
+      username
+      unixtime
+      cocktailname
+      cocktaildegree
+      cupcapacity
+      liqml
+      mixml
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onDeleteUserHistoryData = /* GraphQL */ `
+  subscription OnDeleteUserHistoryData {
+    onDeleteUserHistoryData {
+      username
+      unixtime
+      cocktailname
+      cocktaildegree
+      cupcapacity
+      liqml
+      mixml
+      createdAt
+      updatedAt
+    }
+  }
+`;
 export const onCreateDegreeHistoryData = /* GraphQL */ `
   subscription OnCreateDegreeHistoryData {
     onCreateDegreeHistoryData {

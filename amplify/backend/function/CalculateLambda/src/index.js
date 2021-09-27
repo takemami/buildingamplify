@@ -58,26 +58,41 @@ exports.handler = async (event, context, callback) => {
     var liqdegee = event.arguments.liqdegree;
     var cockdegree = event.arguments.cockdegree;
     var cupcapa = event.arguments.cupcapa;
-    var liqmx  = cupcapa * cockdegree / liqdegee;
-    var mixml = cupcapa - liqmx;
+    var liqmxa  = cupcapa * cockdegree / liqdegee;
+    var mixmla = cupcapa - liqmx;
+    var liqmx  = parseInt(liqmxa, 10);
+    var mixml = parseInt(mixmla, 10);
+    // console.log(liqmx);
 
 
     const DegreeHistoryDataInput = {
         mutation: gql(createDegreeHistoryData),
         variables: {
             input: {
-                unixtime: Math.floor(Date.now() / 1000),
+                unixtime: event.arguments.unixtime,
                 cockdegree: cockdegree,
                 liqml: liqmx,
                 mixml: mixml,
             },
         },
     };
+    // const UserHistoryDataUpdate = {
+    //     mutation: gql(createUserHistoryData),
+    //     variables: {
+    //         input: {
+    //             username: event.arguments.username,
+    //             unixtime: event.arguments.unixtime,
+    //             liqml: liqmx,
+    //             mixml: mixml,
+    //         },
+    //     },
+    // }
     //await API.graphql(graphqlOperation(gqlQueries.listCupData)
     //const res = await graphqlClient.mutate(DegreeHistoryDataInput);
     // const post = res.data.createDegreeHistoryData;
     const post = DegreeHistoryDataInput.variables.input;
-    return post;
+    const post2 = UserHistoryDataUpdate.variables.input;
+    return post, post2;
 };
 
 const createDegreeHistoryData = /* GraphQL */ `
@@ -95,7 +110,24 @@ const createDegreeHistoryData = /* GraphQL */ `
     }
   }
 `;
-
+// const createUserHistoryData = /* GraphQL */ `
+//   mutation CreateUserHistoryData(
+//     $input: CreateUserHistoryDataInput!
+//     $condition: ModelUserHistoryDataConditionInput
+//   ) {
+//     createUserHistoryData(input: $input, condition: $condition) {
+//       username
+//       unixtime
+//       cocktailname
+//       cocktaildegree
+//       cupcapacity
+//       liqml
+//       mixml
+//       createdAt
+//       updatedAt
+//     }
+//   }
+// `;
 
 
 

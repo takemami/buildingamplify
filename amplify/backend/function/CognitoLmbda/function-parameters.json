@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "auth": {
+      "amplifyappc2a9ea47": [
+        "create",
+        "read",
+        "update",
+        "delete"
+      ]
+    },
+    "api": {
+      "amplifyapp": [
+        "Query",
+        "Mutation"
+      ]
+    }
+  },
+  "lambdaLayers": []
+}

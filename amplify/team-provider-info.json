@@ -18,7 +18,11 @@
       "function": {
         "CalculateLambda": {
           "deploymentBucketName": "amplify-amplifyapp-dev-175506-deployment",
-          "s3Key": "amplify-builds/CalculateLambda-4d58622f7567706e644c-build.zip"
+          "s3Key": "amplify-builds/CalculateLambda-342b625168775636596c-build.zip"
+        },
+        "CognitoLmbda": {
+          "deploymentBucketName": "amplify-amplifyapp-dev-175506-deployment",
+          "s3Key": "amplify-builds/CognitoLmbda-30673052414d52346574-build.zip"
         }
       }
     }

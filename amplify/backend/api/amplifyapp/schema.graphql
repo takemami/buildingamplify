@@ -35,6 +35,19 @@ type HistoryData @model
     mixml: Int
 }
 
+type UserHistoryData @model 
+  @key(fields: ["username", "unixtime"]) 
+  @key(name: "UserHistoryIndex", fields: ["username"], queryField: "UserHistoryIndexQuery")
+  {
+    username: String!
+    unixtime: Int!
+    cocktailname: String
+    cocktaildegree: Int
+    cupcapacity: Int
+    liqml: Int
+    mixml: Int
+}
+
 type DegreeHistoryData @model 
   @key(fields: ["unixtime"]) 
   {
@@ -70,6 +83,7 @@ type Mutation
 		liqdegree: Int!
     cockdegree: Int!
     cupcapa: Int!
+    unixtime: Int!
     createdAt: AWSDateTime
     updatedAt: AWSDateTime
 	): DegreeHistoryData

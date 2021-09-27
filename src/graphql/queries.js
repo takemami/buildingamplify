@@ -198,6 +198,53 @@ export const listHistoryData = /* GraphQL */ `
     }
   }
 `;
+export const getUserHistoryData = /* GraphQL */ `
+  query GetUserHistoryData($username: String!, $unixtime: Int!) {
+    getUserHistoryData(username: $username, unixtime: $unixtime) {
+      username
+      unixtime
+      cocktailname
+      cocktaildegree
+      cupcapacity
+      liqml
+      mixml
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const listUserHistoryData = /* GraphQL */ `
+  query ListUserHistoryData(
+    $username: String
+    $unixtime: ModelIntKeyConditionInput
+    $filter: ModelUserHistoryDataFilterInput
+    $limit: Int
+    $nextToken: String
+    $sortDirection: ModelSortDirection
+  ) {
+    listUserHistoryData(
+      username: $username
+      unixtime: $unixtime
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      sortDirection: $sortDirection
+    ) {
+      items {
+        username
+        unixtime
+        cocktailname
+        cocktaildegree
+        cupcapacity
+        liqml
+        mixml
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
 export const getDegreeHistoryData = /* GraphQL */ `
   query GetDegreeHistoryData($unixtime: String!) {
     getDegreeHistoryData(unixtime: $unixtime) {
@@ -309,6 +356,36 @@ export const historyIndexQuery = /* GraphQL */ `
         cocktailname
         cocktaildegree
         unixtime
+        cupcapacity
+        liqml
+        mixml
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+export const userHistoryIndexQuery = /* GraphQL */ `
+  query UserHistoryIndexQuery(
+    $username: String
+    $sortDirection: ModelSortDirection
+    $filter: ModelUserHistoryDataFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    UserHistoryIndexQuery(
+      username: $username
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        username
+        unixtime
+        cocktailname
+        cocktaildegree
         cupcapacity
         liqml
         mixml

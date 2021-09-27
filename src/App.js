@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import './App.css';
-import { API, graphqlOperation } from 'aws-amplify';
+import { API, Auth, graphqlOperation } from 'aws-amplify';
 import { Link, Switch, useHistory, useParams } from 'react-router-dom';
 import { BrowserRouter as Router, Route } from 'react-router-dom'
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react';
@@ -13,14 +13,9 @@ import InfoIcon from '@mui/icons-material/Info';
 import FreeBreakfastIcon from '@mui/icons-material/FreeBreakfast';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import  {styled}  from '@mui/material/styles';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell, { tableCellClasses } from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
+// import  {styled}  from '@mui/material/styles';
+// import TableCell, { tableCellClasses } from '@mui/material/TableCell';
+// import TableRow from '@mui/material/TableRow';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
@@ -33,7 +28,6 @@ import { Info, InfoSubtitle, InfoTitle } from "@mui-treasury/components/info";
 import { useBeatsInfoStyles } from "@mui-treasury/styles/info/beats";
 import * as gqlQueries from './graphql/queries';
 import * as gqlMutations from './graphql/mutations';
-import { AuthState, onAuthUIStateChange } from '@aws-amplify/ui-components';
 import { async } from 'regenerator-runtime';
 
 
@@ -58,21 +52,21 @@ const IconLabelButtons = (props) => {
 }
 
 //テキスト入力コンポーネント
-const FullWidthTextField = (props) => {
-  return (
-    <Box
-      sx={{
-        width: '70%',
-        display: 'inline-flex',
-        maxWidth: '100%',
-        paddingTop: '20px',
-        paddingBottom: '20px',
-      }}
-    >
-      <TextField fullWidth label={props.children} id={props.children} />
-    </Box>
-  );
-}
+// const FullWidthTextField = (props) => {
+//   return (
+//     <Box
+//       sx={{
+//         width: '70%',
+//         display: 'inline-flex',
+//         maxWidth: '100%',
+//         paddingTop: '20px',
+//         paddingBottom: '20px',
+//       }}
+//     >
+//       <TextField fullWidth label={props.children} id={props.children} />
+//     </Box>
+//   );
+// }
 
 //画像並べるコンポーネント
 const TitlebarImageList = (props) => {
@@ -89,11 +83,12 @@ const TitlebarImageList = (props) => {
     props.setCup(result);
   }
   return (
+    <div>
     <Box
       sx={{
         width: '100%',
         display: 'inline-flex',
-        maxWidth: '30%',
+        maxWidth: '70%',
         paddingTop: '0px',
         paddingBottom: '20px',
       }}
@@ -107,7 +102,8 @@ const TitlebarImageList = (props) => {
           <div className="selection-group">
             <input id={item.cupname} type="radio" name="rate" value={item.cupname} />
             <label for={item.cupname}>
-              <img
+              <img 
+                width="100%"
                 src={`${item.cuppicture}?w=248&fit=crop&auto=format`}
                 srcSet={`${item.cuppicture}?w=248&fit=crop&auto=format&dpr=2 2x`}
                 alt={item.cupname}
@@ -130,116 +126,117 @@ const TitlebarImageList = (props) => {
         </ImageListItem>
       ))}
     </ImageList>
-    <Button onClick={() => {handleClick()}} startIcon={<FreeBreakfastIcon/>} variant="outlined">コップ決定</Button>
+    {/* <Button height="10px" onClick={() => {handleClick()}} startIcon={<FreeBreakfastIcon/>} variant="outlined">コップ決定</Button> */}
     </Box>
-  );
+    <Button height="10px" onClick={() => {handleClick()}} startIcon={<FreeBreakfastIcon/>} variant="outlined">コップ決定</Button>
+    </div>
+    );
 }
 
 //テーブルコンポーネント
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  [`&.${tableCellClasses.head}`]: {
-    backgroundColor: theme.palette.common.black,
-    color: theme.palette.common.white,
-  },
-  [`&.${tableCellClasses.body}`]: {
-    fontSize: 14,
-  },
-}));
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  '&:nth-of-type(odd)': {
-    backgroundColor: theme.palette.action.hover,
-  },
-  // hide last border
-  '&:last-child td, &:last-child th': {
-    border: 0,
-  },
-}));
+// const StyledTableCell = styled(TableCell)(({ theme }) => ({
+//   [`&.${tableCellClasses.head}`]: {
+//     backgroundColor: theme.palette.common.black,
+//     color: theme.palette.common.white,
+//   },
+//   [`&.${tableCellClasses.body}`]: {
+//     fontSize: 14,
+//   },
+// }));
+// const StyledTableRow = styled(TableRow)(({ theme }) => ({
+//   '&:nth-of-type(odd)': {
+//     backgroundColor: theme.palette.action.hover,
+//   },
+//   // hide last border
+//   '&:last-child td, &:last-child th': {
+//     border: 0,
+//   },
+// }));
 //テーブルコンポーネント
-function createData(name, calories, fat, carbs, protein) {
-  return { name, calories, fat, carbs, protein };
-}
+// function createData(name, calories, fat, carbs, protein) {
+//   return { name, calories, fat, carbs, protein };
+// }
+// function CustomizedTables() {
+//   const [names, setNames] = useState([]);
+//   const [capas, setCapas] = useState([])
+//   var capacity = [];
+//   var name = [];
+//   async function ListContainer() {
+//     const a = await API.graphql(graphqlOperation(gqlQueries.listContainerData));
+//     // setContainerList(a.data.listContainerData.items);
+//     for(var i=0; i < (a.data.listContainerData.items).length; i++){
+//       var b = a.data.listContainerData.items[i];
+//       capacity.push(b.containercapacity);
+//       name.push(b.containername);
+//     }
+//     setNames([...names, name]);
+//     setCapas([...capas, capacity]);
+//   }
+//   useEffect(() => {
+//     ListContainer();
+//   }, []);
+//   var newCapacity = capas[0];
+//   var newName = names[0];
+//   if(newCapacity != null){
+//     for(var j=0; j<(newCapacity.length); j++){
+//       console.log(newCapacity[`${j}`])
+//     }
+//   }
 
-function CustomizedTables() {
-  const [names, setNames] = useState([]);
-  const [capas, setCapas] = useState([])
-  var capacity = [];
-  var name = [];
-  async function ListContainer() {
-    const a = await API.graphql(graphqlOperation(gqlQueries.listContainerData));
-    // setContainerList(a.data.listContainerData.items);
-    for(var i=0; i < (a.data.listContainerData.items).length; i++){
-      var b = a.data.listContainerData.items[i];
-      capacity.push(b.containercapacity);
-      name.push(b.containername);
-    }
-    setNames([...names, name]);
-    setCapas([...capas, capacity]);
-  }
-  useEffect(() => {
-    ListContainer();
-  }, []);
-  var newCapacity = capas[0];
-  var newName = names[0];
-  if(newCapacity != null){
-    for(var j=0; j<(newCapacity.length); j++){
-      console.log(newCapacity[`${j}`])
-    }
-  }
-
-  return (
-    <Box
-      sx={{
-        width: '100%',
-        display: 'inline-flex',
-        maxWidth: '50%',
-        paddingTop: '0px',
-        paddingBottom: '20px',
-      }}
-    >
-    <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 700 }} aria-label="customized table">
-        <TableHead>
-          <TableRow>
-            <StyledTableCell>容器名（ml）</StyledTableCell>
-            <StyledTableCell align="right">カクテル</StyledTableCell>
-            <StyledTableCell align="right">ミキサー</StyledTableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          <div>
-          {(() => {
-            if(newName != null){
-              const items = [];
-              for (var j=0; j<(newName.length); j++){
-                items.push(
-                  <StyledTableRow key={newName[`${j}`]}>
-                  <StyledTableCell component="th" scope="row">
-                    {newName[`${j}`]}
-                  </StyledTableCell>
-                  {/* <StyledTableCell align="right">{row.calories}</StyledTableCell> */}
-                  {/* <StyledTableCell align="right">{row.fat}</StyledTableCell> */}
-                  </StyledTableRow>
-                )
-              }
-            }
-            return false;
-          })()}
-          </div>
-          {rows.map((row) => (
-            <StyledTableRow key={row.name}>
-              <StyledTableCell component="th" scope="row">
-                {row.name}
-              </StyledTableCell>
-              <StyledTableCell align="right">{row.calories}</StyledTableCell>
-              <StyledTableCell align="right">{row.fat}</StyledTableCell>
-            </StyledTableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-    </Box>
-  );
-}
+//   return (
+//     <Box
+//       sx={{
+//         width: '100%',
+//         display: 'inline-flex',
+//         maxWidth: '50%',
+//         paddingTop: '0px',
+//         paddingBottom: '20px',
+//       }}
+//     >
+//     <TableContainer component={Paper}>
+//       <Table sx={{ minWidth: 700 }} aria-label="customized table">
+//         <TableHead>
+//           <TableRow>
+//             <StyledTableCell>容器名（ml）</StyledTableCell>
+//             <StyledTableCell align="right">カクテル</StyledTableCell>
+//             <StyledTableCell align="right">ミキサー</StyledTableCell>
+//           </TableRow>
+//         </TableHead>
+//         <TableBody>
+//           <div>
+//           {(() => {
+//             if(newName != null){
+//               const items = [];
+//               for (var j=0; j<(newName.length); j++){
+//                 items.push(
+//                   <StyledTableRow key={newName[`${j}`]}>
+//                   <StyledTableCell component="th" scope="row">
+//                     {newName[`${j}`]}
+//                   </StyledTableCell>
+//                   {/* <StyledTableCell align="right">{row.calories}</StyledTableCell> */}
+//                   {/* <StyledTableCell align="right">{row.fat}</StyledTableCell> */}
+//                   </StyledTableRow>
+//                 )
+//               }
+//             }
+//             return false;
+//           })()}
+//           </div>
+//           {rows.map((row) => (
+//             <StyledTableRow key={row.name}>
+//               <StyledTableCell component="th" scope="row">
+//                 {row.name}
+//               </StyledTableCell>
+//               <StyledTableCell align="right">{row.calories}</StyledTableCell>
+//               <StyledTableCell align="right">{row.fat}</StyledTableCell>
+//             </StyledTableRow>
+//           ))}
+//         </TableBody>
+//       </Table>
+//     </TableContainer>
+//     </Box>
+//   );
+// }
 
 //カードコンポーネント（あり）
 function ActionAreaCard(props) {
@@ -275,8 +272,6 @@ function ActionAreaCard(props) {
 
     if(cockdetail.data.getCocktailData.cocktailtaste !== null){
       setCocktaste(cockdetail.data.getCocktailData.cocktailtaste);
-      // console.log(cockdetail.data.getCocktailData.cocktailtaste);
-      // console.log(cocktaste);
     }
   }
   useEffect(() => {
@@ -386,23 +381,23 @@ function renderRow(props) {
     </ListItem>
   );
 }
-function VirtualizedList() {
-  return (
-    <Box
-      sx={{ width: '100%', height: 400, maxWidth: 360, bgcolor: 'background.paper' }}
-    >
-      <FixedSizeList
-        height={400}
-        width={360}
-        itemSize={46}
-        itemCount={200}
-        overscanCount={5}
-      >
-        {renderRow}
-      </FixedSizeList>
-    </Box>
-  );
-}
+// function VirtualizedList() {
+//   return (
+//     <Box
+//       sx={{ width: '100%', height: 400, maxWidth: 360, bgcolor: 'background.paper' }}
+//     >
+//       <FixedSizeList
+//         height={400}
+//         width={360}
+//         itemSize={46}
+//         itemCount={200}
+//         overscanCount={5}
+//       >
+//         {renderRow}
+//       </FixedSizeList>
+//     </Box>
+//   );
+// }
 
 
 //Headerコンポーネント
@@ -475,7 +470,7 @@ const BeatsInfoStyle = (props) => {
       </NoSsr>
       <Info useStyles={useBeatsInfoStyles}>
         <InfoTitle className="stripe">ユーザ名</InfoTitle>
-        <InfoSubtitle>yanbon</InfoSubtitle>
+        <InfoSubtitle>{props.name}</InfoSubtitle>
       </Info>
       <br />
       <br />
@@ -523,6 +518,14 @@ const BeatsInfoStyle = (props) => {
 //画面のレイアウト
 //元々の関数
 function App() {
+  const [currentUserName, setCurrentUserName] = useState("");
+  useEffect(() => {
+    const init = async() => {
+      const currentuser = await Auth.currentAuthenticatedUser();
+      setCurrentUserName(currentuser.username);
+    }
+    init();
+  })
 
   //ユーザ情報確認画面
   function UserInfoApp() {
@@ -533,7 +536,7 @@ function App() {
       </div>
         
       <div>
-        <BeatsInfoStyle />
+        <BeatsInfoStyle name={currentUserName}/>
       </div>
       <div>
         <IconLabelButtons>
@@ -592,35 +595,38 @@ function App() {
     var liqueurDe;
     var mixerDe;
     var cupcapacity;
-    var to = {};
+    // var to = {};
     const history = useHistory();
     const [liqtext, setLiqText] = useState([])
     const [mixtext, setMixText] = useState([])
     const { name } = useParams();
     var linkname = '';
+    var b = '';
     const [CupList, setCupList] = useState([]);
     const [cup, setCup] = useState([])
     async function CocktailData() {
-      const cock = await API.graphql(graphqlOperation(gqlQueries.getCocktailData,{
-        cocktailname: name,
-        cocktailcreator: "管理者",
-      }))
-      const cockUser = await API.graphql(graphqlOperation(gqlQueries.getCocktailData,{
-        cocktailname: name,
-        cocktailcreator: "takematsu",
-      }))
-      var cockliq = '';
-      var cockmix = '';
-      if (cock.data.getCocktailData != null){
-        cockliq = cock.data.getCocktailData.liqueur;
-        cockmix = cock.data.getCocktailData.mixer;
+      if(name != null){
+        const cock = await API.graphql(graphqlOperation(gqlQueries.getCocktailData,{
+          cocktailname: name,
+          cocktailcreator: "管理者",
+        }))
+        const cockUser = await API.graphql(graphqlOperation(gqlQueries.getCocktailData,{
+          cocktailname: name,
+          cocktailcreator: currentUserName,
+        }))
+        var cockliq = '';
+        var cockmix = '';
+        if (cock.data.getCocktailData != null){
+          cockliq = cock.data.getCocktailData.liqueur;
+          cockmix = cock.data.getCocktailData.mixer;
+        }
+        if (cockUser.data.getCocktailData != null) {
+          cockliq = cockUser.data.getCocktailData.liqueur;
+          cockmix = cockUser.data.getCocktailData.mixer;
+        }
+        setLiqText(cockliq);
+        setMixText(cockmix);
       }
-      if (cockUser.data.getCocktailData != null) {
-        cockliq = cockUser.data.getCocktailData.liqueur;
-        cockmix = cockUser.data.getCocktailData.mixer;
-      }
-      setLiqText(cockliq);
-      setMixText(cockmix);
     };
     useEffect(() => {
       CocktailData();
@@ -650,18 +656,31 @@ function App() {
               cupname: cup,
             })); 
             cupcapacity = cupca.data.getCupData.cupcapacity;
-            const res = await API.graphql(graphqlOperation(gqlMutations.calculateLambda, { username: 'takematsu', liqdegree: liqdegree, cockdegree: degreeText, cupcapa: cupcapacity}));  
+            var date = new Date() ;
+            var a = date.getTime() ;
+            b = Math.floor( a / 1000 ) ;
+            const res = await API.graphql(graphqlOperation(gqlMutations.calculateLambda, { username: currentUserName, liqdegree: liqdegree, cockdegree: degreeText, cupcapa: cupcapacity, unixtime: b}));  
             setDegreeText(res.data.CalculateLambda.cockdegree);
             liqueurDe = res.data.CalculateLambda.liqml;
             mixerDe = res.data.CalculateLambda.mixml;
-            linkname = '/CreateLiquor/CalResult'
-            to = {
-              pathname: linkname,
-              search: '?class=A',
-              hash: '#user-hash',
-              state: { degree: degreeText,liq: liqueurDe, mix: mixerDe, cup: cupcapacity, liqueurname: liqtext, mixername: mixtext }
-            };
-            history.push(`/CreateLiquor/CalResult/degree=${degreeText}&liq=${liqueurDe}&mix=${mixerDe}&cup=${cupcapacity}&liqname=${liqtext}&mixname=${mixtext}`)
+            linkname = '/CreateLiquor/CalResult';
+            await API.graphql(graphqlOperation(gqlMutations.createUserHistoryData,{
+              input: {
+                unixtime: b,
+                username: currentUserName,
+                cocktaildegree: degreeText,
+                cupcapacity: cupcapacity,
+                liqml: liqueurDe,
+                mixml: mixerDe
+              }
+            }))
+            // to = {
+            //   pathname: linkname,
+            //   search: '?class=A',
+            //   hash: '#user-hash',
+            //   state: { degree: degreeText,liq: liqueurDe, mix: mixerDe, cup: cupcapacity, liqueurname: liqtext, mixername: mixtext }
+            // };
+            history.push(`/CreateLiquor/CalResult/degree=${degreeText}&liq=${liqueurDe}&mix=${mixerDe}&cup=${cupcapacity}&liqname=${liqtext}&mixname=${mixtext}&time=${b}`)
           } 
         }else{
           //リキュールとミキサーの組み合わせがあったら
@@ -669,18 +688,27 @@ function App() {
             cupname: cup,
           })); 
           cupcapacity = cupca.data.getCupData.cupcapacity;
-          const res = await API.graphql(graphqlOperation(gqlMutations.calculateLambda, { username: 'takematsu', liqdegree: liqdegree, cockdegree: degreeText, cupcapa: cupcapacity}));  
+          var date = new Date() ;
+          var a = date.getTime() ;
+          b = Math.floor( a / 1000 );
+          const res = await API.graphql(graphqlOperation(gqlMutations.calculateLambda, { username: currentUserName, liqdegree: liqdegree, cockdegree: degreeText, cupcapa: cupcapacity, unixtime: b}));  
           setDegreeText(res.data.CalculateLambda.cockdegree);
           liqueurDe = res.data.CalculateLambda.liqml;
           mixerDe = res.data.CalculateLambda.mixml;
           linkname = '/CreateLiquor/CalResultFiltered';
-          to = {
-            pathname: linkname,
-            search: '?class=A',
-            hash: '#user-hash',
-            state: { degree: degreeText,liq: liqueurDe, mix: mixerDe, cup: cupcapacity, liqueurname: liqtext, mixername: mixtext }
-          };
-          history.push(`/CreateLiquor/CalResultFiltered/degree=${degreeText}&liq=${liqueurDe}&mix=${mixerDe}&cup=${cupcapacity}&liqname=${liqtext}&mixname=${mixtext}`)
+          const cocktailName = cock.data.CocktaiLliqandMixIndexQuery.items.cocktailname;
+          await API.graphql(graphqlOperation(gqlMutations.createUserHistoryData,{
+            input: {
+              unixtime: b,
+              username: currentUserName,
+              cocktaildegree: degreeText,
+              cupcapacity: cupcapacity,
+              liqml: liqueurDe,
+              mixml: mixerDe,
+              cocktailname: cocktailName 
+            }
+          }))
+          history.push(`/CreateLiquor/CalResultFiltered/degree=${degreeText}&liq=${liqueurDe}&mix=${mixerDe}&cup=${cupcapacity}&liqname=${liqtext}&mixname=${mixtext}&time=${b}`)
         }
       };
       CocktailFilteredData();
@@ -711,7 +739,7 @@ function App() {
           <TitlebarImageList name={CupList} setCup={setCup}/>
         </div>
         <Button onClick={() => {handleClick()}} startIcon={<FreeBreakfastIcon/>} variant="outlined">
-          <Link to={`${linkname}/degree=${degreeText}&liq=${liqueurDe}&mix=${mixerDe}&cup=${cupcapacity}&liqname=${liqtext}&mixname=${mixtext}`} className="linkBlue">カクテルを作る</Link>
+          <Link to={`${linkname}/degree=${degreeText}&liq=${liqueurDe}&mix=${mixerDe}&cup=${cupcapacity}&liqname=${liqtext}&mixname=${mixtext}&time=${b}`} className="linkBlue">カクテルを作る</Link>
         </Button>
       </div>
     )
@@ -736,17 +764,16 @@ function App() {
     //比率の計算
     var x_big;
     var x_small;
-    var qua;//商
+    // var qua;//商
     var mod;//あまり
     var liq = params.liq;
     var mix = params.mix;
     x_big = Math.max(params.liq, params.mix);
     x_small = Math.min(params.liq, params.mix);
     for (;;){
-      qua = x_big / x_small;
+      // qua = x_big / x_small;
       mod = x_big % x_small;
-      
-      if(mod == 0){
+      if(mod === 0){
         break;
       }
       x_big = x_small;
@@ -809,18 +836,25 @@ function App() {
         }))
         const cockUser = await API.graphql(graphqlOperation(gqlQueries.getCocktailData,{
           cocktailname: cockText,
-          cocktailcreator: "takematsu",
+          cocktailcreator: currentUserName,
         }))
         if ((cock.data.getCocktailData == null) && (cockUser.data.getCocktailData == null)){
-          const cockUser = await API.graphql(graphqlOperation(gqlMutations.createCocktailData,{
+          await API.graphql(graphqlOperation(gqlMutations.createCocktailData,{
             input: {
               cocktailname: cockText,
-              cocktailcreator: "takematsu",
+              cocktailcreator: currentUserName,
               cocktailtaste: tasteText,
               liqueur: params.liqname,
               mixer: params.mixname,
               cocktailpicture: "",
               cocktailfeature: "",
+            }
+          }))
+          await API.graphql(graphqlOperation(gqlMutations.updateUserHistoryData,{
+            input: {
+              username: currentUserName,
+              unixtime: params.time,
+              cocktailname: cockText,
             }
           }))
         }else{
@@ -832,17 +866,17 @@ function App() {
     //比率の計算
     var x_big;
     var x_small;
-    var qua;//商
+    // var qua;//商
     var mod;//あまり
     var liq = params.liq;
     var mix = params.mix;
     x_big = Math.max(params.liq, params.mix);
     x_small = Math.min(params.liq, params.mix);
     for (;;){
-      qua = x_big / x_small;
+      // qua = x_big / x_small;
       mod = x_big % x_small;
       
-      if(mod == 0){
+      if(mod === 0){
         break;
       }
       x_big = x_small;
@@ -893,7 +927,7 @@ function App() {
       }))
       const cockUser = await API.graphql(graphqlOperation(gqlQueries.getCocktailData,{
         cocktailname: name,
-        cocktailcreator: "takematsu",
+        cocktailcreator: currentUserName,
       }))
       const cockd = [];
       const cockdCreator = [];
@@ -970,7 +1004,7 @@ function App() {
       }))
       const cockUser = await API.graphql(graphqlOperation(gqlQueries.cocktailtasteIndexQuery,{
         cocktailtaste: name,
-        cocktailcreator: {eq: 'takematsu'},
+        cocktailcreator: {eq: currentUserName},
         sortDirection: 'DESC',
       }))
       const cockd = [];
@@ -1058,7 +1092,7 @@ function App() {
       }))
       const cockUser = await API.graphql(graphqlOperation(gqlQueries.cocktailliqueurIndexQuery,{
         liqueur: name,
-        cocktailcreator: {eq: 'takematsu'},
+        cocktailcreator: {eq: currentUserName},
         sortDirection: 'DESC',
       }))
       if (cock.data.CocktailliqueurIndexQuery != null){
@@ -1085,13 +1119,6 @@ function App() {
     }, []);
     
     var cockss = cocks[0];
-    // if(cockss != null){
-    //   for(var j=0; j<(cockss.length); j++){
-    //     console.log(cockss[`${j}`])
-    //   }
-    //   console.log(Object.keys(cockss))
-    // }
-
     return (
       <div className="SearchResultLiqApp">
         <h1>検索結果</h1>
@@ -1144,11 +1171,38 @@ function App() {
     const [cockText, setCockText] = useState('');
     const [liqText, setLiqText] = useState('');
     const [makeCockText, setMakeCockText] = useState('');
+    const [cockname, setCockname] = useState('');
+    const [cockuser, setCockuser] = useState('');
     var tasteText = ''; 
     const onChangeCockText = (e) => {setCockText(() => e.target.value)};
     const onChangeLiqText = (e) => {setLiqText(() => e.target.value)};
     const onChangeMakeCockText = (e) => {setMakeCockText(() => e.target.value)};
     const history = useHistory();
+    var cockna = [];
+    var cockus = [];
+    async function HistoryData() {
+      const history = await API.graphql(graphqlOperation(gqlQueries.userHistoryIndexQuery,{
+        username: currentUserName
+      }));
+      if (history.data.UserHistoryIndexQuery === null){
+      }else{
+        for(var i=0; i<((history.data.UserHistoryIndexQuery.items).length); i++){
+          const a = history.data.UserHistoryIndexQuery.items[i];
+          cockna.push(a.cocktailname);
+          cockus.push(a.username);
+        }
+      }
+      setCockname([...cockname, cockna])
+      setCockuser([...cockuser, cockus])
+      
+    };
+
+    useEffect(() => {
+      HistoryData();
+    }, []);
+    
+    var HistoryUserList = cockuser[0];
+    var HistoryCocktailNameList = cockname[0];
 
     function handleClick() {
       history.push(`/SearchResultCock/${cockText}`)
@@ -1176,17 +1230,17 @@ function App() {
           <Grid container spacing={2}>
             <Grid item xs={6}>
               <div className="Cock-history">
-                <p></p>
-                <FixedSizeList
-                  height={500}
-                  width={Autocomplete}
-                  itemSize={46}
-                  itemCount={200}
-                  overscanCount={5}
-                >
-                  {/* {historyocktail} */}
-                  {renderRow}
-                </FixedSizeList>
+                <p>最近作ったカクテル</p>
+                {(() => {
+                  if(HistoryUserList != null){
+                    const items = [];
+                    for (var j=0; j<(HistoryUserList.length); j++){
+                      items.push(<li>{HistoryUserList[`${j}`]}（{HistoryCocktailNameList[`${j}`]}）</li>)
+                    }
+                    return <ul>{items}</ul>
+                  }
+                  return false;
+                })()}
               </div>
             </Grid>
 
@@ -1281,10 +1335,10 @@ export default withAuthenticator(App);
 
 //データ例
 
-const rows = [
-  createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
-  createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
-  createData('Eclair', 262, 16.0, 24, 6.0),
-  createData('Cupcake', 305, 3.7, 67, 4.3),
-  createData('Gingerbread', 356, 16.0, 49, 3.9),
-];
+// const rows = [
+//   createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
+//   createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
+//   createData('Eclair', 262, 16.0, 24, 6.0),
+//   createData('Cupcake', 305, 3.7, 67, 4.3),
+//   createData('Gingerbread', 356, 16.0, 49, 3.9),
+// ];
